@@ -30,4 +30,18 @@ class AuthController extends Controller
             'usuario' => $usuario
         ], 200);
     }
+
+    public function perfil(Request $request)
+{
+    //En un futuro agregar mas cosas del usuario: 
+    //$request->user()->load(['follows', 'followers', 'publicaciones']);
+    $usuario = $request->user();
+    $usuario->load('alumno.carrera');
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Perfil obtenido correctamente',
+        'usuario' => $request->user()
+    ], 200);
+}
 }
