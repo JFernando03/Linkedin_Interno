@@ -60,7 +60,6 @@ class AlumnoController extends Controller
                 ];
             });
 
-            // Responder con éxito (HTTP 201 Created)
             return response()->json([
                 'message' => 'Alumno registrado exitosamente',
                 'data' => $resultado
