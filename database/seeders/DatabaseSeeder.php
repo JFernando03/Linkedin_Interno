@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,9 +18,36 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+
+        // 1. Insertar los roles base
+        DB::table('roles')->insert([
+            ['rol' => 'Alumno'],
+            ['rol' => 'Empresa'],
+            ['rol' => 'Administrador'],
+        ]);
+
+        // 2. Insertar las industrias
+        DB::table('industrias')->insert([
+            ['industria' => 'Programación'],
+            ['industria' => 'Analisis de datos'],
+        ]);
+
+        // 3. Insertar las carreras de la facultad
+        DB::table('carreras')->insert([
+            [
+                'carrera' => 'Licenciatura en Informática',
+                'semestres' => 10,
+                'idIndustria' => 1
+            ],
+            [
+                'carrera' => 'Ingeniería en Software',
+                'semestres' => 9,
+                'idIndustria' => 1
+            ],
         ]);
     }
 }

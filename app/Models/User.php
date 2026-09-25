@@ -17,6 +17,22 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected $table = 'usuarios';
+    protected $primaryKey = 'idUsuario';
+
+    protected $fillable = [
+        'idRol',
+        'sobreMi',
+        'email',
+        'password',
+        'telefono',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -28,5 +44,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relación: Un usuario pertenece a un rol
+    public function rol()
+    {
+        return $this->belongsTo(Rol::class, 'idRol', 'idRol');
+    }
+
+    // Relación: Un usuario tiene un registro de alumno
+    public function alumno()
+    {
+        return $this->hasOne(Alumno::class, 'idUsuario', 'idUsuario');
     }
 }
