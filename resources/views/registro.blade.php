@@ -83,8 +83,14 @@
                             <div class="invalid-feedback" id="error-curriculum"></div>
                         </div>
 
-                        <div class="d-grid">
+                        <!-- Botón de Registro -->
+                        <div class="d-grid mb-3">
                             <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg">Registrar Alumno</button>
+                        </div>
+
+                        <!-- Enlace para regresar al Login -->
+                        <div class="text-center">
+                            <small class="text-muted">¿Ya tienes cuenta? <a href="/login" class="text-decoration-none fw-bold">Inicia sesión aquí</a></small>
                         </div>
 
                     </form>
@@ -123,9 +129,15 @@ document.getElementById('formRegistro').addEventListener('submit', async functio
 
         if (response.ok) {
             alertBox.className = 'alert alert-success';
-            alertBox.textContent = data.message || '¡Alumno registrado correctamente!';
+            alertBox.textContent = (data.message || '¡Alumno registrado correctamente!') + ' Redirigiendo al inicio de sesión...';
             alertBox.classList.remove('d-none');
             this.reset();
+
+            // Redirigir al inicio de sesión tras 1.5 segundos
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+
         } else if (response.status === 422) {
             // Mostrar errores de validación devueltos por la API
             alertBox.className = 'alert alert-danger';
