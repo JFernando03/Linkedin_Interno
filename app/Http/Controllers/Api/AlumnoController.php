@@ -26,11 +26,6 @@ class AlumnoController extends Controller
      */
     public function store(StoreAlumnoRequest $request)
     {
-        \Illuminate\Support\Facades\Log::info('--- PRUEBA AVATAR ---', [
-            'tiene_archivo' => $request->hasFile('avatar'),
-            'archivo' => $request->file('avatar'),
-            'todos_los_datos' => $request->all()
-        ]);
         try {
             $data = $request->validated();
 
