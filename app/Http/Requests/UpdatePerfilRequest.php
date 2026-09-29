@@ -27,16 +27,17 @@ class UpdatePerfilRequest extends FormRequest
 
         return [
             // Campos de usuario
-            'sobreMi'       => ['nullable', 'string', 'max:500'],
+            'sobreMi'       => 'nullable|string|max:500',
             'email'         => ['sometimes', 'email', Rule::unique('usuarios', 'email')->ignore($userId, 'idUsuario')],
-            'telefono'      => ['nullable', 'string', 'max:20'],
+            'telefono'      => 'nullable|string|max:20',
 
             // Campos de alumno
-            'nombre'          => ['sometimes', 'string', 'max:100'],
-            'apellidoPaterno' => ['sometimes', 'string', 'max:100'],
-            'apellidoMaterno' => ['nullable', 'string', 'max:100'],
-            'idCarrera'       => ['sometimes', 'integer', 'exists:carreras,idCarrera'],
-            'curriculum'      => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
+            'nombre'          => 'sometimes|string|max:100',
+            'apellidoPaterno' => 'sometimes|string|max:100',
+            'apellidoMaterno' => 'nullable|string|max:100',
+            'idCarrera'       => 'sometimes|integer|exists:carreras,idCarrera',
+            'curriculum'      => 'nullable|file|mimes:pdf|max:2048',
+            'semestre' => 'required|integer|min:1',
         ];
     }
 }

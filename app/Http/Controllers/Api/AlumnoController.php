@@ -53,6 +53,7 @@ class AlumnoController extends Controller
                     'apellidoMaterno' => $data['apellidoMaterno'],
                     'idCarrera' => $data['idCarrera'],
                     'curriculum' => $data['curriculum'],
+                    'semestre' => $data['semestre'] ?? 1,
                 ]);
 
                 return [

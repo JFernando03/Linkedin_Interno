@@ -60,7 +60,7 @@ class AuthController extends Controller
             $usuario->save();
 
             // Lo mismo para la tabla alumno, pero se guarda para modificar el curriculum
-            $dataAlumno = $request->only(['nombre', 'apellidoPaterno', 'apellidoMaterno', 'idCarrera']);
+            $dataAlumno = $request->only(['nombre', 'apellidoPaterno', 'apellidoMaterno', 'idCarrera','semestre']);
             
             if ($request->hasFile('curriculum')) {
                 // Borrar el currículum anterior si ya existía para no saturar disco

@@ -10,9 +10,10 @@ Route::post('/alumnos', [AlumnoController::class, 'store']);
 // Ruta para el inicio de sesion de alumno (HU-02)
 Route::post('/login', [AuthController::class, 'login']);
 
-// Rutas protegidas por el token del login
 Route::middleware('auth:sanctum')->group(function () {
+    //Ruta para la visualización de perfil de alumno (HU-06)
     Route::get('/perfil', [AuthController::class, 'perfil']);
+    //Ruta para la edición de perfil de alumno (HU-07)
     Route::put('/perfil', [AuthController::class, 'updatePerfil']);
 
     // Ruta para ver/descargar el currículum

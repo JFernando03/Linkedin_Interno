@@ -8,7 +8,7 @@ class Alumno extends Model
 {
     protected $table = 'alumnos';
     protected $primaryKey = 'idAlumno';
-    public $timestamps = false; // Ajusta a true si le agregaste timestamps a la migración de alumnos
+    public $timestamps = false;
 
     protected $fillable = [
         'idUsuario',
@@ -17,12 +17,13 @@ class Alumno extends Model
         'apellidoMaterno',
         'idCarrera',
         'curriculum',
+        'semestre',
     ];
 
     // Relación: El alumno pertenece a un usuario
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'idUsuario', 'idUsuario');
+        return $this->belongsTo(User::class, 'idUsuario', 'idUsuario');
     }
 
     // Relación: El alumno pertenece a una carrera

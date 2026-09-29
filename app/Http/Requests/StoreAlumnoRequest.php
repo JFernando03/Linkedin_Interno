@@ -33,6 +33,7 @@ class StoreAlumnoRequest extends FormRequest
             'apellidoMaterno' => 'required|string|max:50',
             'idCarrera' => 'required|exists:carreras,idCarrera',
             'curriculum' => 'required|file|mimes:pdf,doc,docx|max:2048',
+            'semestre' => 'required|integer|min:1',
         ];
     }
 }

@@ -13,6 +13,6 @@ class Rol extends Model
     // Relación: Un rol tiene muchos usuarios
     public function usuarios()
     {
-        return $this->hasMany(Usuario::class, 'idRol', 'idRol');
+        return $this->hasMany(User::class, 'idRol', 'idRol');
     }
 }
