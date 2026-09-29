@@ -16,3 +16,8 @@ Route::get('/login', function () {
 Route::get('/registro-alumno', function () {
     return view('registro');
 })->name('registro');
+
+Route::get('/perfil', function () {
+    return view('visualizacion-de-perfil-alumno');
+});
+
