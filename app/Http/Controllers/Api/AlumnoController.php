@@ -26,24 +26,38 @@ class AlumnoController extends Controller
      */
     public function store(StoreAlumnoRequest $request)
     {
+        \Illuminate\Support\Facades\Log::info('--- PRUEBA AVATAR ---', [
+            'tiene_archivo' => $request->hasFile('avatar'),
+            'archivo' => $request->file('avatar'),
+            'todos_los_datos' => $request->all()
+        ]);
         try {
             $data = $request->validated();
 
-            $resultado = DB::transaction(function () use ($data) {
+            $resultado = DB::transaction(function () use ($request, $data) {
                 
-                // Crear el registro en la tabla 'usuarios'
-                $usuario = User::create([
+                // 1. Preparar datos base del usuario
+                $userData = [
                     'idRol' => $data['idRol'],
                     'email' => $data['email'],
                     'password' => Hash::make($data['password']),
                     'telefono' => $data['telefono'],
                     'sobreMi' => $data['sobreMi'] ?? null,
-                ]);
+                ];
 
-                $curriculum = $data['curriculum'];
+                // 2. Guardar el avatar si viene en la petición
+                if ($request->hasFile('avatar')) {
+                    $userData['avatar'] = $request->file('avatar')->store('avatars', 'public');
+                }
 
-                $curriculumPath = $curriculum->store('curriculums','public');
-                $data['curriculum'] = $curriculumPath;
+                // Crear el registro en la tabla 'usuarios'
+                $usuario = User::create($userData);
+
+                // 3. Guardar el currículum si viene en la petición
+                $curriculumPath = null;
+                if ($request->hasFile('curriculum')) {
+                    $curriculumPath = $request->file('curriculum')->store('curriculums', 'public');
+                }
 
                 // Crear el registro en la tabla 'alumnos' usando el idUsuario generado
                 $alumno = Alumno::create([
@@ -52,7 +66,7 @@ class AlumnoController extends Controller
                     'apellidoPaterno' => $data['apellidoPaterno'],
                     'apellidoMaterno' => $data['apellidoMaterno'],
                     'idCarrera' => $data['idCarrera'],
-                    'curriculum' => $data['curriculum'],
+                    'curriculum' => $curriculumPath,
                     'semestre' => $data['semestre'] ?? 1,
                 ]);
 

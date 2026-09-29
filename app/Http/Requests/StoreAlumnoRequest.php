@@ -34,6 +34,7 @@ class StoreAlumnoRequest extends FormRequest
             'idCarrera' => 'required|exists:carreras,idCarrera',
             'curriculum' => 'required|file|mimes:pdf,doc,docx|max:2048',
             'semestre' => 'required|integer|min:1',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];
     }
 }

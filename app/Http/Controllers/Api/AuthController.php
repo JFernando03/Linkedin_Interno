@@ -55,22 +55,37 @@ class AuthController extends Controller
 
         DB::transaction(function () use ($request, $usuario, $alumno) {
             
-            // Actualizar solo los datos del usuario proporcionados
-            $usuario->fill($request->only(['sobreMi', 'email', 'telefono']));
+            // Datos a actualizar del usuario
+            $dataUsuario = $request->only(['sobreMi', 'email', 'telefono']);
+
+            // Manejar la foto de perfil (avatar)
+            if ($request->hasFile('avatar')) {
+                // Borrar el avatar anterior si ya existía para no saturar disco
+                if ($usuario->avatar && Storage::disk('public')->exists($usuario->avatar)) {
+                    Storage::disk('public')->delete($usuario->avatar);
+                }
+
+                // Guardar el nuevo avatar en la carpeta 'avatars'
+                $pathAvatar = $request->file('avatar')->store('avatars', 'public');
+                $dataUsuario['avatar'] = $pathAvatar;
+            }
+
+            // Actualizar los datos del usuario
+            $usuario->fill($dataUsuario);
             $usuario->save();
 
-            // Lo mismo para la tabla alumno, pero se guarda para modificar el curriculum
-            $dataAlumno = $request->only(['nombre', 'apellidoPaterno', 'apellidoMaterno', 'idCarrera','semestre']);
+            // Datos para la tabla alumno
+            $dataAlumno = $request->only(['nombre', 'apellidoPaterno', 'apellidoMaterno', 'idCarrera', 'semestre']);
             
             if ($request->hasFile('curriculum')) {
-                // Borrar el currículum anterior si ya existía para no saturar disco
+                // Borrar el currículum anterior si ya existía
                 if ($alumno && $alumno->curriculum && Storage::disk('public')->exists($alumno->curriculum)) {
                     Storage::disk('public')->delete($alumno->curriculum);
                 }
 
                 // Guardar el nuevo archivo en la carpeta 'curriculums'
-                $path = $request->file('curriculum')->store('curriculums', 'public');
-                $dataAlumno['curriculum'] = $path;
+                $pathCurriculum = $request->file('curriculum')->store('curriculums', 'public');
+                $dataAlumno['curriculum'] = $pathCurriculum;
             }
 
             // Actualizar datos del alumno

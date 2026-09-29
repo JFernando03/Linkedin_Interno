@@ -30,6 +30,7 @@ class UpdatePerfilRequest extends FormRequest
             'sobreMi'       => 'nullable|string|max:500',
             'email'         => ['sometimes', 'email', Rule::unique('usuarios', 'email')->ignore($userId, 'idUsuario')],
             'telefono'      => 'nullable|string|max:20',
+            'avatar'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
             // Campos de alumno
             'nombre'          => 'sometimes|string|max:100',
@@ -37,7 +38,7 @@ class UpdatePerfilRequest extends FormRequest
             'apellidoMaterno' => 'nullable|string|max:100',
             'idCarrera'       => 'sometimes|integer|exists:carreras,idCarrera',
             'curriculum'      => 'nullable|file|mimes:pdf|max:2048',
-            'semestre' => 'required|integer|min:1',
+            'semestre'        => 'required|integer|min:1',
         ];
     }
 }
