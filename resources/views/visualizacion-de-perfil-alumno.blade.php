@@ -203,25 +203,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                                alumno.ruta_cv;
 
         if (curriculumPath) {
-            let fullPath = curriculumPath;
-
-            if (!fullPath.startsWith('http://') && !fullPath.startsWith('https://')) {
-                // Limpia prefijos sobrantes para prevenir error 404
-                const cleanPath = fullPath
-                    .replace(/^\/+/, '')
-                    .replace(/^public\//, '')
-                    .replace(/^storage\//, '');
-
-                fullPath = `/storage/${cleanPath}`;
-            }
-
-            console.log('Ruta del CV generada:', fullPath);
-
+            // Renderizamos un botón que llamará a la API de forma segura
             document.getElementById('profileCurriculumContainer').innerHTML = `
-                <a href="${fullPath}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm fw-semibold">
+                <button id="btnVerCv" class="btn btn-outline-primary btn-sm fw-semibold">
                     <i class="bi bi-file-earmark-pdf"></i> Ver / Descargar CV
-                </a>
+                </button>
             `;
+
+            // Agregamos el evento para descargar/ver el PDF usando el token
+            document.getElementById('btnVerCv').addEventListener('click', async () => {
+                try {
+                    const resPdf = await fetch('/api/alumno/curriculum', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!resPdf.ok) {
+                        throw new Error('No se pudo cargar el archivo PDF.');
+                    }
+
+                    // Convierte la respuesta en un archivo legible y lo abre en una pestaña nueva
+                    const blob = await resPdf.blob();
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    window.open(blobUrl, '_blank');
+
+                } catch (err) {
+                    alert(err.message);
+                }
+            });
         } else {
             document.getElementById('profileCurriculumContainer').innerHTML = `
                 <span class="text-muted"><i class="bi bi-exclamation-circle"></i> Sin documento adjunto</span>

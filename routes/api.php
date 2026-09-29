@@ -14,4 +14,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/perfil', [AuthController::class, 'perfil']);
     Route::put('/perfil', [AuthController::class, 'updatePerfil']);
+
+    // Ruta para ver/descargar el currículum
+    Route::get('/alumno/curriculum', [AlumnoController::class, 'verCurriculum']);
 });

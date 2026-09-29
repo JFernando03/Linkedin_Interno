@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AlumnoController extends Controller
 {
@@ -95,5 +96,33 @@ class AlumnoController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function verCurriculum(Request $request)
+    {
+        // Obtenemos el alumno asociado al usuario autenticado
+        $alumno = $request->user()->alumno;
+
+        // Validamos que el alumno y el campo de currículum existan
+        if (!$alumno || !$alumno->curriculum) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay ningún currículum registrado.'
+            ], 404);
+        }
+
+        $path = $alumno->curriculum;
+
+        // Verificamos que el archivo físico realmente exista en el disco 'public'
+        if (!Storage::disk('public')->exists($path)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El archivo físico no se encuentra en el servidor.'
+            ], 404);
+        }
+
+        $absolutePath = Storage::disk('public')->path($path);
+
+        return response()->file($absolutePath); 
     }
 }

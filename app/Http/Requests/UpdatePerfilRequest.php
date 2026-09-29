@@ -36,7 +36,7 @@ class UpdatePerfilRequest extends FormRequest
             'apellidoPaterno' => ['sometimes', 'string', 'max:100'],
             'apellidoMaterno' => ['nullable', 'string', 'max:100'],
             'idCarrera'       => ['sometimes', 'integer', 'exists:carreras,idCarrera'],
-            'curriculum'      => ['nullable', 'file', 'mimes:pdf', 'max:2048'], // Validar que sea PDF de máximo 2MB
+            'curriculum'      => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
         ];
     }
 }
