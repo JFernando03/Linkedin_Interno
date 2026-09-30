@@ -61,11 +61,30 @@
                             <div class="invalid-feedback" id="error-password"></div>
                         </div>
 
-                        <!-- Teléfono -->
-                        <div class="mb-3">
-                            <label for="telefono" class="form-label">Teléfono</label>
-                            <input type="text" name="telefono" id="telefono" class="form-control" maxlength="10" required>
-                            <div class="invalid-feedback" id="error-telefono"></div>
+                        <!-- Teléfono y Semestre (En una misma fila) -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input type="text" name="telefono" id="telefono" class="form-control" maxlength="10" required>
+                                <div class="invalid-feedback" id="error-telefono"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="semestre" class="form-label">Semestre</label>
+                                <select name="semestre" id="semestre" class="form-select" required>
+                                    <option value="" selected disabled>Selecciona tu semestre</option>
+                                    <option value="1">1.º Semestre</option>
+                                    <option value="2">2.º Semestre</option>
+                                    <option value="3">3.º Semestre</option>
+                                    <option value="4">4.º Semestre</option>
+                                    <option value="5">5.º Semestre</option>
+                                    <option value="6">6.º Semestre</option>
+                                    <option value="7">7.º Semestre</option>
+                                    <option value="8">8.º Semestre</option>
+                                    <option value="9">9.º Semestre</option>
+                                    <option value="10">10.º Semestre</option>
+                                </select>
+                                <div class="invalid-feedback" id="error-semestre"></div>
+                            </div>
                         </div>
 
                         <!-- Sobre Mí -->
