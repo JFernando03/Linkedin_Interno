@@ -12,7 +12,7 @@ Route::get('/login', function () {
     return view('inicio-sesion-alumno');
 })->name('login');
 
-// Ruta de Registro (Asegúrate de tener ->name('registro'))
+// Ruta de Registro
 Route::get('/registro-alumno', function () {
     return view('registro');
 })->name('registro');
@@ -21,3 +21,7 @@ Route::get('/perfil', function () {
     return view('visualizacion-de-perfil-alumno');
 });
 
+// Ruta de edición (Pública temporalmente para pruebas)
+Route::get('/perfil/editar', function () {
+    return view('edicion-perfil-alumno');
+})->name('perfil.editar');
