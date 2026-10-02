@@ -17,12 +17,11 @@ Route::get('/login', function () {
 Route::get('/registro-alumno', function () {
     return view('registro');
 })->name('registro');
-// 1. Ruta para VER el perfil (La que faltaba y causaba el 404)
+//Ruta de perfil
 Route::get('/perfil', function () {
     return view('visualizacion-de-perfil-alumno'); // Nombre de tu vista de perfil
 })->name('perfil');
-
-// 2. Ruta para EDITAR el perfil (Simplificada para usar la API)
+//Ruta de perfil-editar
 Route::get('/perfil/editar', function () {
     return view('edicion-perfil-alumno');
 })->name('perfil.editar');
