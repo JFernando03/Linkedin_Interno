@@ -11,7 +11,7 @@ class Carrera extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'nombre',
+        'carrera',
         'semestres',
         'idIndustria',
     ];

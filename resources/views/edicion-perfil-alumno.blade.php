@@ -51,14 +51,12 @@
                                 <input type="text" class="form-control" id="apellidoMaterno" name="apellidoMaterno" required placeholder="Apellido Materno">
                                 <div class="invalid-feedback" id="error-apellidoMaterno"></div>
                             </div>
-
-                            <!-- Carrera (Con opción de ID o Nombre en caso de que el backend guarde el string) -->
+                            
+                            <!-- Atualizacion: Se carga desde el PostgreSQL -->
                             <div class="mb-3">
                                 <label for="idCarrera" class="form-label fw-bold">Carrera</label>
                                 <select class="form-select" id="idCarrera" name="idCarrera" required>
-                                    <option value="">Selecciona tu carrera</option>
-                                    <option value="1">Licenciatura en Informática</option>
-                                    <option value="2">Científico en Ciencia de Datos</option>
+                                    <option value="">Cargando carreras...</option>
                                 </select>
                                 <div class="invalid-feedback" id="error-idCarrera"></div>
                             </div>
@@ -66,7 +64,9 @@
                             <!-- Semestre -->
                             <div class="mb-3">
                                 <label for="semestre" class="form-label fw-bold">Semestre</label>
-                                <input type="number" class="form-control" id="semestre" name="semestre" min="1" max="15" value="1" required>
+                                <select class="form-select" id="semestre" name="semestre" required>
+                                    <option value="">Seleccione carrera</option>
+                                </select>
                                 <div class="invalid-feedback" id="error-semestre"></div>
                             </div>
 
@@ -95,170 +95,238 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            cargarDatosAlumno();
-            document.getElementById('formEditarPerfil').addEventListener('submit', guardarDatosAlumno);
-        });
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Cargar carrera desde la API
+        cargarCarreras();
 
-        function getToken() {
-            return localStorage.getItem('token') || 
-                   localStorage.getItem('access_token') || 
-                   localStorage.getItem('auth_token') || 
-                   sessionStorage.getItem('token');
+        document.getElementById('formEditarPerfil').addEventListener('submit', guardarDatosAlumno);
+        document.getElementById('idCarrera').addEventListener('change', function () {
+            const optionSeleccionada = this.options[this.selectedIndex];
+            const totalSemestres = optionSeleccionada ? optionSeleccionada.getAttribute('data-semestres') : null;
+            actualizarOpcionesSemestre(totalSemestres);
+        });
+    });
+
+    function getToken() {
+        return localStorage.getItem('token') || 
+               localStorage.getItem('access_token') || 
+               localStorage.getItem('auth_token') || 
+               sessionStorage.getItem('token');
+    }
+
+    function cargarCarreras() {
+        const token = getToken();
+
+        fetch('/api/carreras', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error al cargar la lista de carreras.');
+            return response.json();
+        })
+        .then(data => {
+            const carreras = data.data || data.carreras || data;
+            const selectCarrera = document.getElementById('idCarrera');
+
+            selectCarrera.innerHTML = '<option value="">Selecciona tu carrera</option>';
+
+            carreras.forEach(carrera => {
+                const option = document.createElement('option');
+                const id = carrera.idCarrera || carrera.id_carrera || carrera.id;
+                const nombre = carrera.carrera || carrera.nombre;
+                const semestres = carrera.semestres || carrera.total_semestres || 10;
+
+                option.value = id;
+                option.textContent = nombre;
+                option.setAttribute('data-semestres', semestres);
+
+                selectCarrera.appendChild(option);
+            });
+
+            cargarDatosAlumno();
+        })
+        .catch(error => mostrarAlerta(error.message, 'danger'));
+    }
+
+    function actualizarOpcionesSemestre(totalSemestres, semestreSeleccionado = null) {
+        const selectSemestre = document.getElementById('semestre');
+        if (!selectSemestre) return;
+
+        selectSemestre.innerHTML = '';
+
+        if (!totalSemestres) {
+            selectSemestre.innerHTML = '<option value="">Selecciona primero una carrera</option>';
+            return;
         }
 
-        // Cargar datos actuales del alumno y preseleccionar la carrera correctamente
-        function cargarDatosAlumno() {
-            const token = getToken();
-
-            if (!token) {
-                mostrarAlerta('No se encontró un token de sesión. Por favor inicia sesión nuevamente.', 'danger');
-                return;
+        selectSemestre.innerHTML = '<option value="">Selecciona tu semestre</option>';
+        for (let i = 1; i <= parseInt(totalSemestres); i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `Semestre ${i}`;
+            if (semestreSeleccionado && parseInt(semestreSeleccionado) === i) {
+                option.selected = true;
             }
+            selectSemestre.appendChild(option);
+        }
+    }
 
-            fetch('/api/perfil', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            .then(response => {
-                if (response.status === 401) throw new Error('Sesión vencida. Inicia sesión de nuevo.');
-                if (!response.ok) throw new Error('Error al obtener la información del perfil.');
-                return response.json();
-            })
-            .then(data => {
-                const alumno = data.data || data.user || data.alumno || data;
-                
-                if (document.getElementById('nombre')) document.getElementById('nombre').value = alumno.nombre || '';
-                if (document.getElementById('apellidoPaterno')) document.getElementById('apellidoPaterno').value = alumno.apellidoPaterno || '';
-                if (document.getElementById('apellidoMaterno')) document.getElementById('apellidoMaterno').value = alumno.apellidoMaterno || '';
-                if (document.getElementById('semestre')) document.getElementById('semestre').value = alumno.semestre || 1;
+    function cargarDatosAlumno() {
+        const token = getToken();
 
-                // Detección flexible del ID o Nombre de la Carrera devuelto por el Backend
-                const selectCarrera = document.getElementById('idCarrera');
-                const carreraVal = alumno.idCarrera || alumno.id_carrera || (alumno.carrera ? (alumno.carrera.idCarrera || alumno.carrera.id || alumno.carrera.nombre) : null);
+        if (!token) {
+            mostrarAlerta('No se encontró un token de sesión. Por favor inicia sesión nuevamente.', 'danger');
+            return;
+        }
 
-                if (carreraVal && selectCarrera) {
-                    // Intenta seleccionar por valor exacto
-                    selectCarrera.value = String(carreraVal);
+        fetch('/api/perfil', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (response.status === 401) throw new Error('Sesión vencida. Inicia sesión de nuevo.');
+            if (!response.ok) throw new Error('Error al obtener la información del perfil.');
+            return response.json();
+        })
+        .then(data => {
+            const alumno = data.data || data.user || data.alumno || data;
+            
+            if (document.getElementById('nombre')) document.getElementById('nombre').value = alumno.nombre || '';
+            if (document.getElementById('apellidoPaterno')) document.getElementById('apellidoPaterno').value = alumno.apellidoPaterno || '';
+            if (document.getElementById('apellidoMaterno')) document.getElementById('apellidoMaterno').value = alumno.apellidoMaterno || '';
 
-                    // Si la API devuelve el nombre textual en lugar del ID, busca coincidencia por texto
-                    if (!selectCarrera.value) {
-                        for (let option of selectCarrera.options) {
-                            if (option.text.toLowerCase().trim() === String(carreraVal).toLowerCase().trim()) {
-                                option.selected = true;
-                                break;
-                            }
+            const selectCarrera = document.getElementById('idCarrera');
+            const carreraVal = alumno.idCarrera || alumno.id_carrera || (alumno.carrera ? (alumno.carrera.idCarrera || alumno.carrera.id || alumno.carrera.nombre) : null);
+
+            if (carreraVal && selectCarrera) {
+                selectCarrera.value = String(carreraVal);
+
+                if (!selectCarrera.value) {
+                    for (let option of selectCarrera.options) {
+                        if (option.text.toLowerCase().trim() === String(carreraVal).toLowerCase().trim()) {
+                            option.selected = true;
+                            break;
                         }
                     }
                 }
-            })
-            .catch(error => mostrarAlerta(error.message, 'danger'));
-        }
 
-        // Guardar cambios adaptándose al envío que requiere el Backend
-        function guardarDatosAlumno(e) {
-            e.preventDefault();
-
-            const token = getToken();
-            if (!token) {
-                mostrarAlerta('No estás autenticado. Inicia sesión de nuevo.', 'danger');
-                return;
-            }
-
-            const alertBox = document.getElementById('alertBox');
-            const btnGuardar = document.getElementById('btnGuardar');
-
-            alertBox.classList.add('d-none');
-            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
-
-            btnGuardar.disabled = true;
-            btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
-
-            const formData = new FormData();
-            formData.append('nombre', document.getElementById('nombre').value);
-            formData.append('apellidoPaterno', document.getElementById('apellidoPaterno').value);
-            formData.append('apellidoMaterno', document.getElementById('apellidoMaterno').value);
-            
-            // Envío del ID de la carrera seleccionado
-            const selectCarrera = document.getElementById('idCarrera');
-            formData.append('idCarrera', selectCarrera.value);
-            formData.append('semestre', document.getElementById('semestre').value);
-
-            const fileInput = document.getElementById('curriculum');
-            if (fileInput.files.length > 0) {
-                formData.append('curriculum', fileInput.files[0]);
-            }
-
-            formData.append('_method', 'PUT');
-
-            fetch('/api/perfil', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            })
-            .then(async response => {
-                const data = await response.json();
-
-                if (response.ok) {
-                    mostrarAlerta(data.message || '¡Perfil actualizado con éxito!', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/perfil';
-                    }, 1500);
-                } else if (response.status === 401) {
-                    throw new Error('El token expiró o no es válido. Por favor inicia sesión de nuevo.');
-                } else if (response.status === 422) {
-                    let mensajeGeneral = 'Por favor revisa la información ingresada:';
-                    
-                    if (data.errors) {
-                        let lista = [];
-                        Object.keys(data.errors).forEach(field => {
-                            const input = document.getElementById(field);
-                            const errorDiv = document.getElementById(`error-${field}`);
-                            
-                            if (input) input.classList.add('is-invalid');
-                            if (errorDiv) errorDiv.textContent = data.errors[field][0];
-                            
-                            lista.push(`- ${data.errors[field][0]}`);
-                        });
-                        mensajeGeneral += '<br>' + lista.join('<br>');
-                    } else if (data.message) {
-                        mensajeGeneral = data.message;
-                    }
-                    
-                    mostrarAlertaHtml(mensajeGeneral, 'danger');
-                } else {
-                    throw new Error(data.message || 'Error al actualizar el perfil.');
+                const optionSeleccionada = selectCarrera.options[selectCarrera.selectedIndex];
+                if (optionSeleccionada) {
+                    const totalSemestres = optionSeleccionada.getAttribute('data-semestres');
+                    actualizarOpcionesSemestre(totalSemestres, alumno.semestre);
                 }
-            })
-            .catch(error => mostrarAlerta(error.message, 'danger'))
-            .finally(() => {
-                btnGuardar.disabled = false;
-                btnGuardar.innerHTML = '<i class="bi bi-save"></i> Guardar Cambios';
-            });
+            }
+        })
+        .catch(error => mostrarAlerta(error.message, 'danger'));
+    }
+
+    // Guardar cambios
+    function guardarDatosAlumno(e) {
+        e.preventDefault();
+
+        const token = getToken();
+        if (!token) {
+            mostrarAlerta('No estás autenticado. Inicia sesión de nuevo.', 'danger');
+            return;
         }
 
-        function mostrarAlerta(mensaje, tipo) {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.className = `alert alert-${tipo}`;
-            alertBox.textContent = mensaje;
-            alertBox.classList.remove('d-none');
+        const alertBox = document.getElementById('alertBox');
+        const btnGuardar = document.getElementById('btnGuardar');
+
+        alertBox.classList.add('d-none');
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+
+        const formData = new FormData();
+        formData.append('nombre', document.getElementById('nombre').value);
+        formData.append('apellidoPaterno', document.getElementById('apellidoPaterno').value);
+        formData.append('apellidoMaterno', document.getElementById('apellidoMaterno').value);
+        
+        const selectCarrera = document.getElementById('idCarrera');
+        formData.append('idCarrera', selectCarrera.value);
+        formData.append('semestre', document.getElementById('semestre').value);
+
+        const fileInput = document.getElementById('curriculum');
+        if (fileInput.files.length > 0) {
+            formData.append('curriculum', fileInput.files[0]);
         }
 
-        function mostrarAlertaHtml(htmlContent, tipo) {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.className = `alert alert-${tipo}`;
-            alertBox.innerHTML = htmlContent;
-            alertBox.classList.remove('d-none');
-        }
-    </script>
+        formData.append('_method', 'PUT');
+
+        fetch('/api/perfil', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        })
+        .then(async response => {
+            const data = await response.json();
+
+            if (response.ok) {
+                mostrarAlerta(data.message || '¡Perfil actualizado con éxito!', 'success');
+                setTimeout(() => {
+                    window.location.href = '/perfil';
+                }, 1500);
+            } else if (response.status === 401) {
+                throw new Error('El token expiró o no es válido. Por favor inicia sesión de nuevo.');
+            } else if (response.status === 422) {
+                let mensajeGeneral = 'Por favor revisa la información ingresada:';
+                
+                if (data.errors) {
+                    let lista = [];
+                    Object.keys(data.errors).forEach(field => {
+                        const input = document.getElementById(field);
+                        const errorDiv = document.getElementById(`error-${field}`);
+                        
+                        if (input) input.classList.add('is-invalid');
+                        if (errorDiv) errorDiv.textContent = data.errors[field][0];
+                        
+                        lista.push(`- ${data.errors[field][0]}`);
+                    });
+                    mensajeGeneral += '<br>' + lista.join('<br>');
+                } else if (data.message) {
+                    mensajeGeneral = data.message;
+                }
+                
+                mostrarAlertaHtml(mensajeGeneral, 'danger');
+            } else {
+                throw new Error(data.message || 'Error al actualizar el perfil.');
+            }
+        })
+        .catch(error => mostrarAlerta(error.message, 'danger'))
+        .finally(() => {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<i class="bi bi-save"></i> Guardar Cambios';
+        });
+    }
+
+    function mostrarAlerta(mensaje, tipo) {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.className = `alert alert-${tipo}`;
+        alertBox.textContent = mensaje;
+        alertBox.classList.remove('d-none');
+    }
+
+    function mostrarAlertaHtml(htmlContent, tipo) {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.className = `alert alert-${tipo}`;
+        alertBox.innerHTML = htmlContent;
+        alertBox.classList.remove('d-none');
+    }
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
