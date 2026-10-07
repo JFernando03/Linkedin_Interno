@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('publicaciones', function (Blueprint $table) {
             $table->id('idPublicacion');
-            $table->foreignId('idUsuario')->constrained('usuarios', 'idUsuario')->onDelete('cascade');            $table->string('titulo');
+            $table->foreignId('idUsuario')->constrained('usuarios', 'idUsuario')->onDelete('cascade');
+            $table->string('titulo');
             $table->text('contenido');
             $table->string('multimedia')->nullable();
             $table->timestamp('published_at')->nullable();
