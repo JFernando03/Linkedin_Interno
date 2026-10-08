@@ -26,4 +26,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Ruta para crear una publicacion
     Route::post('/publicaciones', [PublicacionController::class,'store']);
+    //Ruta para editar una publicacion
+    Route::put('/publicaciones/{idPublicacion}', [PublicacionController::class,'update']);
 });

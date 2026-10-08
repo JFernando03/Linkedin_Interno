@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePublicacionRequest;
+use App\Http\Requests\UpdatePublicacionRequest;
 use App\Models\Publicacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PublicacionController extends Controller
 {
@@ -32,6 +34,48 @@ class PublicacionController extends Controller
                 'message' => 'Ocurrió un error en el servidor',
                 'error' => $e->getMessage(),
             ],500);
+        }
+    }
+
+    public function update(UpdatePublicacionRequest $request, $idPublicacion){
+        try{
+            // Buscar la publicación
+            $publicacion = Publicacion::find($idPublicacion);
+
+            if(!$publicacion){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Publicación no encontrada',
+                ]);
+            }
+
+            $data = $request->validated();
+
+            //Manejar el archivo multimedia si se envia uno nuevo
+            if($request->hasFile('multimedia')){
+                //Si tenia un archivo lo eliminamos del Storage publico
+                if($publicacion->multimedia && Storage::disk('public')->exists($publicacion->multimedia)){
+                    Storage::disk('public')->delete($publicacion->multimedia);
+                }
+
+                //Guardar nueva multimedia
+                $data['multimedia'] = $request->file('multimedia')->store('publicaciones','public');
+            }
+
+            //Actualizar publicacion con los datos validados
+            $publicacion->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Publicación actualizada exitosamente',
+                'publicacion' => $publicacion
+            ]);
+        } catch (\Exception $e){
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrio un error en el servidor',
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }
