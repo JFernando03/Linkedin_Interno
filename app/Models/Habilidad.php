@@ -17,7 +17,8 @@ class Habilidad extends Model
     // Relacion: una habilidad pertenece a muchos usuario_habilidad
     public function usuarios()
     {
-        return $this->belongsToMany(User::class, 'usuario_habilidad', 'idHabilidad', 'idUsuario')
+        return $this->belongsToMany(Alumno::class, 'alumno_habilidades', 'idHabilidad', 'idALumno')
+                    ->using(AlumnoHabilidad::class)
                     ->withPivot('idNivel', 'idUsuarioHabilidad');
     }
 }

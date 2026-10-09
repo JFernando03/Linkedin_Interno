@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class usuario_habilidad extends Pivot
+class AlumnoHabilidad extends Pivot
 {
-    protected $table = 'usuario_habilidades';
-    protected $primaryKey = 'id_usuario_habilidad';
+    protected $table = 'alumno_habilidades';
+    protected $primaryKey = 'id_alumno_habilidad';
     public $incrementing = true;
     
     public $timestamps = false;
 
     protected $fillable = [
-        'idUsuario',
+        'idAlumno',
         'idHabilidad',
         'idNivel',
     ];

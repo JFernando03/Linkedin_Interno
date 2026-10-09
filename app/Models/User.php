@@ -59,11 +59,4 @@ class User extends Authenticatable
     {
         return $this->hasOne(Alumno::class, 'idUsuario', 'idUsuario');
     }
-
-    // Relación: Un usuario tiene muchas habilidades
-    public function habilidades()
-    {
-        return $this->belongsToMany(Habilidad::class, 'usuario_habilidad', 'idUsuario', 'idHabilidad')
-                    ->withPivot('idNivel', 'idUsuarioHabilidad');
-    }
 }

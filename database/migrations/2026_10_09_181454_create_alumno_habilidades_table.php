@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('usuario_habilidades', function (Blueprint $table) {
-            $table->id('id_usuario_habilidad');
-            $table->foreignId('idUsuario')->constrained('usuarios','idUsuario')->onDelete('cascade');
+        Schema::create('alumno_habilidades', function (Blueprint $table) {
+            $table->id('id_alumno_habilidad');
+            $table->foreignId('idAlumno')->constrained('alumnos','idAlumno')->onDelete('cascade');
             $table->foreignId('idHabilidad')->constrained('habilidades','idHabilidad')->onDelete('cascade');
             $table->foreignId('idNivel')->constrained('niveles','idNivel')->onDelete('cascade');
 
-            // Evitar que el usuario repita la misma habilidad
-            $table->unique(['idUsuario', 'idHabilidad']);
+            // Evitar que el alumno repita la misma habilidad
+            $table->unique(['idAlumno', 'idHabilidad']);
         });
     }
 

@@ -31,4 +31,12 @@ class Alumno extends Model
     {
         return $this->belongsTo(Carrera::class, 'idCarrera', 'idCarrera');
     }
+
+    //Relación: El alumno tiene muchas habilidades
+    public function habilidades()
+    {
+        return $this->belongsToMany(Habilidad::class, 'alumno_habilidades', 'idAlumno', 'idHabilidad')
+                    ->using(AlumnoHabilidad::class) // Opcional si creas el modelo pivote
+                    ->withPivot('idNivel', 'id_alumno_habilidad');
+    }
 }
