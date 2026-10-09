@@ -28,4 +28,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/publicaciones', [PublicacionController::class,'store']);
     //Ruta para editar una publicacion
     Route::put('/publicaciones/{idPublicacion}', [PublicacionController::class,'update']);
+    //Ruta para eliminar una publicacion
+    Route::delete('/publicaciones/{idPublicacion}', [PublicacionController::class, 'destroy']);
 });

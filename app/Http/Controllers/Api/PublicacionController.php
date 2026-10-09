@@ -78,4 +78,37 @@ class PublicacionController extends Controller
             ]);
         }
     }
+
+    public function destroy($idPublicacion){
+        try{
+            //Buscar la publicacion
+            $publicacion = Publicacion::find($idPublicacion);
+
+            if(!$publicacion){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Publicacion no encontrado',
+                ], 404);
+            }
+
+            //Si tiene un archivo multimedia, eliminarlo del Storage público
+            if($publicacion->multimedia && Storage::disk('public')->exists($publicacion->multimedia)){
+                Storage::disk('public')->delete($publicacion->multimedia);
+            }
+            
+            //Eliminar el registro de la base de datos
+            $publicacion->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Eliminación de publicacion exitosa',
+            ],200);
+        } catch (\Exception $e){
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrio un error en el servidor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
