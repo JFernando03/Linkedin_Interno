@@ -88,5 +88,35 @@ class PerfilController extends Controller
         ], 201);
     }
 
-    
+    public function destroyHabilidad(Request $request, $idAlumnoHabilidad)
+    {
+        $usuario = $request->user();
+        $alumno = $usuario->alumno;
+
+        if (!$alumno) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perfil de alumno no encontrado.',
+            ], 404);
+        }
+
+        $eliminado = $alumno->habilidades()
+                             ->wherePivot('id_alumno_habilidad', $idAlumnoHabilidad)
+                             ->detach();
+
+        if (!$eliminado) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la habilidad en tu perfil.',
+            ], 404);
+        }
+
+        $usuario->load(['alumno.carrera', 'alumno.habilidades']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Habilidad eliminada del perfil correctamente.',
+            'usuario' => $usuario
+        ], 200);
+    }
 }

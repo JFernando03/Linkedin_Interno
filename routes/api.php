@@ -24,6 +24,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Ruta para agregar una habilidad al alumno
     Route::post('alumnos/habilidades',[PerfilController::class, 'storeHabilidad']);
+    //Ruta para eliminar una habilidad al alumno
+    Route::delete('alumnos/habilidades/{idAlumnoHabilidad}',[PerfilController::class, 'destroyHabilidad']);
 
     // Ruta para ver/descargar el currículum
     Route::get('/alumnos/curriculum', [AlumnoController::class, 'verCurriculum']);
