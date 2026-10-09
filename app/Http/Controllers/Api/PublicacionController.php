@@ -79,11 +79,15 @@ class PublicacionController extends Controller
         }
     }
 
-    public function destroy($idPublicacion){
+    public function destroy(Request $request, $idPublicacion){
         try{
-            //Buscar la publicacion
-            $publicacion = Publicacion::find($idPublicacion);
+            $usuario = $request->user();
 
+            //Buscar la publicacion
+            $publicacion = Publicacion::where('idPublicacion', $idPublicacion)
+                                        ->where('idUsuario', $usuario->idUsuario) 
+                                        ->first();
+                                        
             if(!$publicacion){
                 return response()->json([
                     'success' => false,
