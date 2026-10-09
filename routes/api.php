@@ -17,6 +17,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/carreras', [CarreraController::class,'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    //Ruta para logout
+    Route::post('/logout', [AuthController::class, 'logout']);
+
     //Ruta para la visualización de perfil de alumno (HU-06)
     Route::get('/perfil', [PerfilController::class, 'show']);
     //Ruta para la edición de perfil de alumno (HU-07)
