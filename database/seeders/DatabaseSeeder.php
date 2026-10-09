@@ -44,10 +44,38 @@ class DatabaseSeeder extends Seeder
                 'idIndustria' => 1
             ],
             [
-                'carrera' => 'Ingeniería en Software',
-                'semestres' => 9,
+                'carrera' => 'Licenciatura en Informática Modalidad Virtual',
+                'semestres' => 8,
                 'idIndustria' => 1
             ],
+            [
+                'carrera' => 'Licenciatura en Ingeniería en Ciencia de Datos',
+                'semestres' => 9,
+                'idIndustria' => 2
+            ],
+        ]);
+
+        // 4. Insertar los niveles de dominio
+        DB::table('niveles')->insert([
+            ['nombre' => 'Bajo'],
+            ['nombre' => 'Medio'],
+            ['nombre' => 'Alto'],
+        ]);
+
+        // 5. Insertar habilidades tecnológicas e idiomas base
+        DB::table('habilidades')->insert([
+            // Tecnologías / Frameworks / Lenguajes
+            ['nombre' => 'PHP'],
+            ['nombre' => 'Laravel'],
+            ['nombre' => 'Java'],
+            ['nombre' => 'Kotlin'],
+            ['nombre' => 'Python'],
+            ['nombre' => 'MySQL'],
+            ['nombre' => 'React'],
+            
+            ['nombre' => 'Inglés'],
+            ['nombre' => 'Francés'],
+            ['nombre' => 'Español'],
         ]);
     }
 }
