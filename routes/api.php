@@ -16,6 +16,8 @@ Route::post('/login', [AuthController::class, 'login']);
 
 //Ruta para obtener todas las carreras
 Route::get('/carreras', [CarreraController::class,'index']);
+// Ruta para listar el catalogo de habilidades disponibles
+Route::get('/habilidades',[HabilidadController::class,'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Ruta para logout
@@ -25,9 +27,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/perfil', [PerfilController::class, 'show']);
     //Ruta para la edición de perfil de alumno (HU-07)
     Route::put('/perfil', [PerfilController::class, 'update']);
-
-    // Ruta para listar el catalogo de habilidades disponibles
-    Route::get('/habilidades',[HabilidadController::class,'index']);
 
     //Ruta para agregar una habilidad al alumno
     Route::post('alumnos/habilidades',[PerfilController::class, 'storeHabilidad']);
