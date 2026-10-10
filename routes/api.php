@@ -33,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Ruta para ver/descargar el currículum
     Route::get('/alumnos/curriculum', [AlumnoController::class, 'verCurriculum']);
 
+    //Ruta para ver publicaciones
+    Route::get('/publicaciones', [PublicacionController::class, 'index']);
     //Ruta para crear una publicacion
     Route::post('/publicaciones', [PublicacionController::class,'store']);
     //Ruta para editar una publicacion

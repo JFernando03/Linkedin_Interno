@@ -11,6 +11,18 @@ use Illuminate\Support\Facades\Storage;
 
 class PublicacionController extends Controller
 {
+    public function index(Request $request){
+        $publicaciones = Publicacion::with('usuario')
+            ->orderBy('published_at', 'desc')
+            ->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Publicaciones obtenidas correctamente',
+            'publicaciones' => $publicaciones
+        ], 200);
+    }
+
     public function store(StorePublicacionRequest $request){
         try{
             $data = $request->validated();
