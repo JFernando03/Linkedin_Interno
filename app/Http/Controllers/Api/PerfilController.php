@@ -13,7 +13,7 @@ class PerfilController extends Controller
 {
     public function show(Request $request){
         $usuario = $request->user();
-        $usuario->load(['alumno.carrera', 'habilidades']);
+        $usuario->load(['alumno.carrera', 'alumno.habilidades']);
 
         return response()->json([
             'success' => true,
