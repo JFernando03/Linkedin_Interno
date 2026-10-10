@@ -10,7 +10,7 @@ class NivelController extends Controller
 {
     public function index(Request $request)
     {
-        $niveles = Nivel::orderBy('id', 'asc')->get();
+        $niveles = Nivel::orderBy('idNivel', 'asc')->get();
 
         return response()->json([
             'success' => true,
