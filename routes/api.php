@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarreraController;
 use App\Http\Controllers\Api\PerfilController;
 use App\Http\Controllers\Api\PublicacionController;
+use App\Http\Controllers\Api\HabilidadController;
 use Illuminate\Support\Facades\Route;
 
 // Ruta para el registro de alumnos (HU-01)
@@ -24,6 +25,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/perfil', [PerfilController::class, 'show']);
     //Ruta para la edición de perfil de alumno (HU-07)
     Route::put('/perfil', [PerfilController::class, 'update']);
+
+    // Ruta para listar el catalogo de habilidades disponibles
+    Route::get('/habilidades',[HabilidadController::class,'index']);
 
     //Ruta para agregar una habilidad al alumno
     Route::post('alumnos/habilidades',[PerfilController::class, 'storeHabilidad']);
