@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarreraController;
+use App\Http\Controllers\Api\NivelController;
 use App\Http\Controllers\Api\PerfilController;
 use App\Http\Controllers\Api\PublicacionController;
 use App\Http\Controllers\Api\HabilidadController;
@@ -18,6 +19,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/carreras', [CarreraController::class,'index']);
 // Ruta para listar el catalogo de habilidades disponibles
 Route::get('/habilidades',[HabilidadController::class,'index']);
+// Ruta para listar el catalogo de niveles disponibles
+Route::get('/niveles', [NivelController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Ruta para logout
