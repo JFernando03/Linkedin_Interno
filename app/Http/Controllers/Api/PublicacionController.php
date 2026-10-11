@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 class PublicacionController extends Controller
 {
     public function index(Request $request){
-        $publicaciones = Publicacion::with('usuario')
+        $publicaciones = Publicacion::with('usuario.alumno')
             ->orderBy('published_at', 'desc')
             ->paginate(10);
 
