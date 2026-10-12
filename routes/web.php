@@ -25,3 +25,7 @@ Route::get('/perfil', function () {
 Route::get('/perfil/editar', function () {
     return view('edicion-perfil-alumno');
 })->name('perfil.editar');
+//Ruta para el feed de publicaciones
+Route::get('/feed', function () {
+    return view('visualizacion-feed');
+});

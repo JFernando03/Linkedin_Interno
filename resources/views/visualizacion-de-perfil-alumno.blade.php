@@ -11,11 +11,22 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#">linkedinFIC</a>
+        <a class="navbar-brand fw-bold" href="/feed">linkedinFIC</a>
         
         <div class="d-flex align-items-center gap-3">
-            <!-- Nombre del usuario logueado en la Navbar -->
+            <!-- Nombre del usuario logueado en la Navbar (ID original) -->
             <span class="text-white fw-semibold d-none d-sm-inline" id="navUserName">Cargando...</span>
+            
+            <!-- Botones de Navegación -->
+            <a href="/feed" class="btn btn-outline-light btn-sm fw-semibold">
+                <i class="bi bi-house-door-fill me-1"></i> Inicio (Feed)
+            </a>
+
+            <a href="/perfil" class="btn btn-light btn-sm text-primary fw-bold">
+                <i class="bi bi-person-fill me-1"></i> Mi Perfil
+            </a>
+
+            <!-- Botón de Cerrar Sesión (ID original) -->
             <button class="btn btn-outline-light btn-sm" id="btnLogout">Cerrar Sesión</button>
         </div>
     </div>
