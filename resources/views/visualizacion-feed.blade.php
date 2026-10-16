@@ -33,27 +33,29 @@
     <div class="container py-4" style="max-width: 680px;">
         
         <!-- Formulario de Publicación -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <form id="formCrearPublicacion">
-                    <!-- Campo Título -->
-                    <div class="mb-2">
-                        <input type="text" id="tituloPublicacion" class="form-control border-0 bg-light fw-bold" placeholder="Título de la publicación..." required>
-                    </div>
-                    
-                    <!-- Campo Contenido -->
-                    <div class="d-flex align-items-start mb-3">
-                        <textarea id="contenidoPublicacion" class="form-control border-0 bg-light" rows="3" placeholder="¿Qué quieres compartir hoy?" style="resize: none;" required></textarea>
-                    </div>
-                    
-                    <hr class="my-2">
-                    <div class="d-flex justify-content-between align-items-center pt-1">
-                        <small class="text-muted">En que estas pensando...</small>
-                        <button type="submit" id="btnPublicar" class="btn btn-primary btn-sm px-4 rounded-pill">Publicar</button>
-                    </div>
-                </form>
+        <form id="formCrearPublicacion" enctype="multipart/form-data">
+            <div class="mb-3">
+                <input type="text" id="tituloPublicacion" class="form-control" placeholder="Título de la publicación..." required>
             </div>
-        </div>
+            
+            <div class="mb-3">
+                <textarea id="contenidoPublicacion" class="form-control" rows="3" placeholder="¿Qué quieres compartir hoy?" required></textarea>
+            </div>
+            <!-- Imagen y fecha programada -->
+            <div class="row mb-3">
+                <div class="col-md-6 mb-2">
+                    <label for="multimediaPublicacion" class="form-label small fw-bold text-muted">Imagen/Multimedia (Opcional)</label>
+                    <input type="file" id="multimediaPublicacion" class="form-control form-control-sm" accept="image/*,video/*">
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="fechaProgramada" class="form-label small fw-bold text-muted">Programar publicación (Opcional)</label>
+                    <input type="datetime-local" id="fechaProgramada" class="form-control form-control-sm">
+                </div>
+            </div>
+
+            <button type="submit" id="btnPublicar" class="btn btn-primary w-100 fw-bold">Publicar</button>
+        </form>
 
         <!-- Muro / Lista de Publicaciones -->
         <div id="contenedorFeed">
@@ -160,7 +162,7 @@ async function cargarPublicaciones() {
         contenedor.innerHTML = '';
 
         if (!publicaciones || publicaciones.length === 0) {
-            contenedor.innerHTML = '<div class="card border-0 shadow-sm p-4 text-center text-muted">Aún no hay publicaciones en la plataforma. ¡Sé el primero en compartir algo!</div>';
+            contenedor.innerHTML = '<div class="card border-0 shadow-sm p-4 text-center text-muted">No existen publicaciones actualmente. ¡Comparte algo!</div>';
             return;
         }
 
@@ -274,6 +276,8 @@ async function crearPublicacion(e) {
     const form = document.getElementById('formCrearPublicacion');
     const inputTitulo = document.getElementById('tituloPublicacion');
     const textareaContenido = document.getElementById('contenidoPublicacion');
+    const inputMultimedia = document.getElementById('multimediaPublicacion');
+    const inputFecha = document.getElementById('fechaProgramada');
     const btn = document.getElementById('btnPublicar');
 
     const titulo = inputTitulo.value.trim();
@@ -282,46 +286,71 @@ async function crearPublicacion(e) {
     if (!titulo || !contenido) return;
 
     const editId = form.dataset.editId;
+    
+    // URL y Método: Si editamos, usamos POST con _method = PUT para permitir multipart/form-data en PHP
     const url = editId ? `/api/publicaciones/${editId}` : '/api/publicaciones';
-    const method = editId ? 'PUT' : 'POST';
+    
+    // Crear objeto FormData para enviar datos + archivo
+    const formData = new FormData();
+    formData.append('titulo', titulo);
+    formData.append('contenido', contenido);
 
-    let idUsuario = null;
+    // Si editamos, simulamos el verbo PUT requerido por Laravel
+    if (editId) {
+        formData.append('_method', 'PUT');
+    }
+
+    // Adjuntar archivo multimedia si fue seleccionado
+    if (inputMultimedia && inputMultimedia.files[0]) {
+        formData.append('multimedia', inputMultimedia.files[0]);
+    }
+
+    // Adjuntar fecha programada si fue seleccionada
+    if (inputFecha && inputFecha.value) {
+        formData.append('published_at', inputFecha.value);
+    }
+
+    // Adjuntar ID del usuario logueado
     try {
         const usuarioStorage = localStorage.getItem('usuario');
         if (usuarioStorage) {
             const userObj = JSON.parse(usuarioStorage);
-            idUsuario = userObj.idUsuario || userObj.id;
+            const idUser = userObj.idUsuario || userObj.id;
+            if (idUser) formData.append('idUsuario', idUser);
         }
     } catch (e) {}
 
     btn.disabled = true;
     btn.textContent = editId ? 'Guardando...' : 'Publicando...';
 
-    const payload = { 
-        titulo: titulo,
-        contenido: contenido
-    };
-
-    if (idUsuario) {
-        payload.idUsuario = idUsuario;
-    }
-
     try {
-        const response = await fetch(url, getFetchOptions(method, payload));
+        const response = await fetch(url, getFetchFormDataOptions('POST', formData));
         const responseData = await response.json();
 
-        if (response.ok) {
-            inputTitulo.value = '';
-            textareaContenido.value = '';
-            delete form.dataset.editId;
-            btn.textContent = 'Publicar';
+    if (response.ok && responseData.success) {
+        const fechaProgramada = inputFecha ? inputFecha.value : null;
 
-            cargarPublicaciones();
-        } else {
-            alert(responseData.message || 'Error al procesar la publicación');
+        // Limpiar campos
+        inputTitulo.value = '';
+        textareaContenido.value = '';
+        if (inputMultimedia) inputMultimedia.value = '';
+        if (inputFecha) inputFecha.value = '';
+
+        delete form.dataset.editId;
+        btn.textContent = 'Publicar';
+
+        // Notificar si fue programada para el futuro
+        if (fechaProgramada && new Date(fechaProgramada) > new Date()) {
+            alert('Publicación programada con éxito. Se mostrará en el feed en la fecha seleccionada.');
+        }
+
+        // Recargar el feed desde el servidor (que ya viene filtrado por la API)
+        cargarPublicaciones();
+} else {
+            alert(responseData.message || responseData.error || 'Error al procesar la publicación');
         }
     } catch (error) {
-        alert('Error de conexión con la API: ' + error.message);
+        alert('Error de conexión con el servidor: ' + error.message);
     } finally {
         btn.disabled = false;
         if (!form.dataset.editId) {
@@ -350,12 +379,18 @@ async function eliminarPublicacion(idPublicacion, elementoBoton) {
 }
 
 // Cargar datos en el formulario para editar
-function prepararEdicion(idPublicacion, tituloEnc, contenidoEnc) {
+function prepararEdicion(idPublicacion, tituloEnc, contenidoEnc, fechaProgramada = '') {
     const titulo = decodeURIComponent(tituloEnc);
     const contenido = decodeURIComponent(contenidoEnc);
-
+    
     document.getElementById('tituloPublicacion').value = titulo;
     document.getElementById('contenidoPublicacion').value = contenido;
+    
+    const inputFecha = document.getElementById('fechaProgramada');
+    if (inputFecha && fechaProgramada) {
+        // Convertir formato si viene en ISO string
+        inputFecha.value = fechaProgramada.slice(0, 16);
+    }
 
     const btn = document.getElementById('btnPublicar');
     btn.textContent = 'Guardar Cambios';
@@ -364,6 +399,26 @@ function prepararEdicion(idPublicacion, tituloEnc, contenidoEnc) {
     form.dataset.editId = idPublicacion;
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+    // Helper de Fetch para enviar FormData con archivos e imagen
+    function getFetchFormDataOptions(method = 'POST', formData = null) {
+        const token = localStorage.getItem('auth_token');
+
+        const headers = {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+
+        if (token && token !== 'null' && token !== 'undefined') {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+
+        return {
+            method: method,
+            headers: headers,
+            body: formData
+    };
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
