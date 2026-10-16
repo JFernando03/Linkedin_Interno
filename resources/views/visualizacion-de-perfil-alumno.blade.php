@@ -14,7 +14,7 @@
         <a class="navbar-brand fw-bold" href="/feed">linkedinFIC</a>
         
         <div class="d-flex align-items-center gap-3">
-            <!-- Nombre del usuario logueado en la Navbar (ID original) -->
+            <!-- Nombre del usuario logueado en la Navbar -->
             <span class="text-white fw-semibold d-none d-sm-inline" id="navUserName">Cargando...</span>
             
             <!-- Botones de Navegación -->
@@ -26,7 +26,7 @@
                 <i class="bi bi-person-fill me-1"></i> Mi Perfil
             </a>
 
-            <!-- Botón de Cerrar Sesión (ID original) -->
+            <!-- Botón de Cerrar Sesión -->
             <button class="btn btn-outline-light btn-sm" id="btnLogout">Cerrar Sesión</button>
         </div>
     </div>
@@ -103,6 +103,22 @@
 
                     <hr class="my-4">
 
+                    <!-- SECCIÓN HABILIDADES TECNOLÓGICAS (Añadida correctamente) -->
+                    <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3">
+                        <i class="bi bi-code-slash me-1"></i> Habilidades Tecnológicas
+                    </h5>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-muted">Mis Habilidades</div>
+                        <div class="col-sm-8">
+                            <div id="profileHabilidades" class="d-flex flex-wrap gap-1">
+                                <span class="text-muted">Cargando habilidades...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
                     <!-- Sección Documentación -->
                     <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3">
                         <i class="bi bi-file-earmark-pdf-fill me-1"></i> Documentación
@@ -128,11 +144,18 @@ const carrerasMap = {
     2: 'Ingeniería Civil',
     3: 'Ingeniería en Procesos Industriales',
     4: 'Licenciatura en Astronomía',
-    // Agrega más según la base de datos de tu facultad
 };
 
+// Función unificada y segura para obtener el token sin importar la llave
+function getToken() {
+    return localStorage.getItem('auth_token') || 
+           localStorage.getItem('token') || 
+           localStorage.getItem('access_token') || 
+           sessionStorage.getItem('token');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    const token = localStorage.getItem('auth_token');
+    const token = getToken();
     const alertBox = document.getElementById('alertBox');
     const loader = document.getElementById('loader');
     const cardPerfil = document.getElementById('cardPerfil');
@@ -153,6 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (response.status === 401) {
             localStorage.clear();
+            sessionStorage.clear();
             window.location.replace('/login');
             return;
         }
@@ -163,12 +187,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const res = await response.json();
         
-        // Extrae el objeto base y anidado (alumno/persona)
         const baseData = res.data || res.usuario || res.user || res;
         const alumno = baseData.alumno || baseData.persona || baseData;
-
-        console.log('Respuesta API completa:', res);
-        console.log('Datos Alumno extraídos:', alumno);
 
         // --- NOMBRES Y APELLIDOS ---
         const nombre = alumno.nombre || baseData.nombre || '';
@@ -185,7 +205,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('profileTelefono').textContent = alumno.telefono || baseData.telefono || 'No especificado';
         document.getElementById('profileSobreMi').textContent = alumno.sobreMi || alumno.sobre_mi || baseData.sobreMi || 'Sin información disponible.';
 
-        // --- CREADO / OBTENIDO NOMBRE DE LA CARRERA ---
+        // --- HABILIDADES TECNOLÓGICAS (Renderizado dinámico) ---
+        renderizarHabilidadesPerfil(alumno.habilidades || baseData.habilidades || alumno.alumno_habilidades);
+
+        // --- NOMBRE DE LA CARRERA ---
         const idCarrera = alumno.idCarrera || baseData.idCarrera;
         let nombreCarrera = 'No especificada';
 
@@ -207,24 +230,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('profileRol').textContent = 'Alumno';
         }
 
-        // --- CURRÍCULUM (LIMPIEZA DE RUTA Y ENLACE) ---
+        // --- CURRÍCULUM ---
         const curriculumPath = alumno.curriculum || 
                                baseData.curriculum || 
                                alumno.curriculum_vitae || 
                                alumno.ruta_cv;
 
         if (curriculumPath) {
-            // Renderizamos un botón que llamará a la API de forma segura
             document.getElementById('profileCurriculumContainer').innerHTML = `
                 <button id="btnVerCv" class="btn btn-outline-primary btn-sm fw-semibold">
                     <i class="bi bi-file-earmark-pdf"></i> Ver / Descargar CV
                 </button>
             `;
 
-            // Agregamos el evento para descargar/ver el PDF usando el token
             document.getElementById('btnVerCv').addEventListener('click', async () => {
                 try {
-                    const resPdf = await fetch('/api/alumno/curriculum', {
+                    const resPdf = await fetch('/api/alumnos/curriculum', {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -235,7 +256,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         throw new Error('No se pudo cargar el archivo PDF.');
                     }
 
-                    // Convierte la respuesta en un archivo legible y lo abre en una pestaña nueva
                     const blob = await resPdf.blob();
                     const blobUrl = window.URL.createObjectURL(blob);
                     window.open(blobUrl, '_blank');
@@ -261,10 +281,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Función para renderizar dinámicamente las habilidades del alumno con nivel
+function renderizarHabilidadesPerfil(habilidades) {
+    const container = document.getElementById('profileHabilidades');
+    
+    if (!habilidades || habilidades.length === 0) {
+        container.innerHTML = '<span class="text-muted">Sin habilidades registradas</span>';
+        return;
+    }
+
+    const nivelesMap = { 1: 'Básico', 2: 'Intermedio', 3: 'Avanzado' };
+
+    container.innerHTML = '';
+    habilidades.forEach(item => {
+        const nombreH = item.habilidad ? (item.habilidad.nombre || item.habilidad.habilidad) : (item.nombre || item.habilidad);
+        const idNivel = item.pivot?.idNivel || item.idNivel || 2;
+        const textoNivel = nivelesMap[idNivel] || `Nivel ${idNivel}`;
+
+        if (nombreH) {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1 fs-6 d-inline-flex align-items-center gap-1';
+            badge.innerHTML = `<span>${nombreH}</span> <small class="text-muted" style="font-size: 0.75rem;">(${textoNivel})</small>`;
+            container.appendChild(badge);
+        }
+    });
+}
+
 // Cerrar sesión
 document.getElementById('btnLogout').addEventListener('click', async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('auth_token');
+    const token = getToken();
     
     if (token) {
         try {
