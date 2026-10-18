@@ -103,7 +103,7 @@
 
                     <hr class="my-4">
 
-                    <!-- SECCIÓN HABILIDADES TECNOLÓGICAS (Añadida correctamente) -->
+                    <!-- SECCIÓN HABILIDADES TECNOLÓGICAS -->
                     <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3">
                         <i class="bi bi-code-slash me-1"></i> Habilidades Tecnológicas
                     </h5>
@@ -138,14 +138,6 @@
 </div>
 
 <script>
-// Diccionario para traducir idCarrera al nombre real de la carrera
-const carrerasMap = {
-    1: 'Ingeniería en Software',
-    2: 'Ingeniería Civil',
-    3: 'Ingeniería en Procesos Industriales',
-    4: 'Licenciatura en Astronomía',
-};
-
 // Función unificada y segura para obtener el token sin importar la llave
 function getToken() {
     return localStorage.getItem('auth_token') || 
@@ -208,16 +200,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // --- HABILIDADES TECNOLÓGICAS (Renderizado dinámico) ---
         renderizarHabilidadesPerfil(alumno.habilidades || baseData.habilidades || alumno.alumno_habilidades);
 
-        // --- NOMBRE DE LA CARRERA ---
-        const idCarrera = alumno.idCarrera || baseData.idCarrera;
+        // --- OBTENCIÓN DINÁMICA DEL NOMBRE DE LA CARRERA DESDE LA BASE DE DATOS ---
         let nombreCarrera = 'No especificada';
 
-        if (alumno.carrera && alumno.carrera.nombre) {
-            nombreCarrera = alumno.carrera.nombre;
-        } else if (idCarrera && carrerasMap[idCarrera]) {
-            nombreCarrera = carrerasMap[idCarrera];
-        } else if (typeof idCarrera === 'string' && isNaN(idCarrera)) {
-            nombreCarrera = idCarrera;
+        if (alumno.carrera) {
+            // Si la relación 'carrera' viene cargada como objeto (ej. alumno.carrera.nombre o alumno.carrera.carrera)
+            nombreCarrera = alumno.carrera.nombre || alumno.carrera.carrera || alumno.carrera.descripcion || 'Carrera sin nombre';
         }
 
         document.getElementById('profileCarrera').textContent = nombreCarrera;
