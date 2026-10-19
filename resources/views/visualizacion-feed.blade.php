@@ -5,29 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed | linkedinFIC</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+    :root {
+        --brand-blue: #0a66c2;
+        --brand-blue-hover: #004182;
+        --brand-gold: #c09018;
+        --brand-gold-hover: #a37a13;
+    }
+
+    /* Fondo azul corporativo para la barra */
+    .bg-brand {
+        background-color: var(--brand-blue) !important;
+    }
+
+    /* Botón Publicar */
+    .btn-brand, #btnPublicar {
+        background-color: var(--brand-blue) !important;
+        border-color: var(--brand-blue) !important;
+        color: #ffffff !important;
+    }
+
+    .btn-brand:hover, #btnPublicar:hover {
+        background-color: var(--brand-blue-hover) !important;
+        border-color: var(--brand-blue-hover) !important;
+    }
+
+    /* Botón Dorado (Cerrar sesión) */
+    .btn-gold {
+        background-color: var(--brand-gold) !important;
+        border-color: var(--brand-gold) !important;
+        color: #ffffff !important;
+    }
+
+    .btn-gold:hover {
+        background-color: var(--brand-gold-hover) !important;
+        border-color: var(--brand-gold-hover) !important;
+    }
+</style>
 </head>
 <body class="bg-light">
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/feed">linkedinFIC</a>
-            
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-white fw-semibold d-none d-sm-inline" id="navUserName">Cargando...</span>
+<nav class="navbar navbar-expand-lg navbar-dark bg-brand shadow-sm sticky-top py-2">
+    <div class="container">
+
+<a class="navbar-brand d-flex align-items-center py-0" href="/feed">
+    <div class="bg-white px-2 py-1 rounded-3 shadow-sm d-flex align-items-center" style="height: 42px;">
+        <img src="/images/logofic.webp" alt="LinkedFIC Logo" style="height: 34px; width: auto; object-fit: contain;">
+    </div>
+</a>
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="ms-auto d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                <span id="navUserName" class="text-white fw-bold d-none d-lg-inline"></span>
                 
-                <a href="/feed" class="btn btn-light btn-sm text-primary fw-bold">
-                    <i class="bi bi-house-door-fill me-1"></i> Inicio (Feed)
-                </a>
-
-                <a href="/perfil" class="btn btn-outline-light btn-sm fw-semibold">
-                    <i class="bi bi-person-fill me-1"></i> Mi Perfil
-                </a>
-
-                <button class="btn btn-outline-light btn-sm" id="btnLogout">Cerrar Sesión</button>
+                <a href="/feed" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Inicio (Feed)</a>
+                <a href="/perfil" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Mi Perfil</a>
+                
+                <button type="button" onclick="cerrarSesion()" class="btn btn-gold btn-sm fw-bold rounded-pill px-3">Cerrar Sesión</button>
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <!-- Contenido Principal -->
     <div class="container py-4" style="max-width: 680px;">
@@ -37,7 +80,7 @@
             <div class="mb-3">
                 <input type="text" id="tituloPublicacion" class="form-control" placeholder="Título de la publicación..." required>
             </div>
-            
+
             <div class="mb-3">
                 <textarea id="contenidoPublicacion" class="form-control" rows="3" placeholder="¿Qué quieres compartir hoy?" required></textarea>
             </div>
@@ -56,7 +99,13 @@
 
             <button type="submit" id="btnPublicar" class="btn btn-primary w-100 fw-bold">Publicar</button>
         </form>
-
+            <!-- Opción dinámica para eliminar imagen al editar -->
+            <div id="contenedorEliminarImagen" class="form-check mt-2 d-none">
+                <input class="form-check-input" type="checkbox" id="checkEliminarImagen">
+                <label class="form-check-label text-danger small fw-bold" for="checkEliminarImagen">
+                    Eliminar imagen actual
+                </label>
+            </div>
         <!-- Muro / Lista de Publicaciones -->
         <div id="contenedorFeed">
             <div class="text-center py-4 text-muted" id="loadingFeed">
@@ -70,15 +119,34 @@
 <!-- Feed -->
 <!-- Scripts de Lógica del Feed con CRUD completo -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    obtenerUsuarioActual();
+document.addEventListener('DOMContentLoaded', async function () {
+    obtenerUsuarioActual(); // Muestra el respaldo rápido primero
+    await actualizarUsuarioStorage(); // Trae los datos reales de la API
     cargarPublicaciones();
-
-    const form = document.getElementById('formCrearPublicacion');
-    if (form) {
-        form.addEventListener('submit', crearPublicacion);
-    }
 });
+
+async function actualizarUsuarioStorage() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    try {
+        const res = await fetch('/api/perfil', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (res.ok) {
+            const resJson = await res.json();
+            // Guarda exactamente el objeto de usuario que retorna PerfilController.php
+            localStorage.setItem('usuario', JSON.stringify(resJson.usuario));
+            obtenerUsuarioActual();
+        }
+    } catch (e) {
+        console.warn('Error al sincronizar perfil en Feed:', e);
+    }
+}
 
 // Helper centralizado para preparar peticiones fetch
 function getFetchOptions(method = 'GET', body = null) {
@@ -108,20 +176,20 @@ function getFetchOptions(method = 'GET', body = null) {
 
 // Cargar Nombre de Usuario en el Navbar
 function obtenerUsuarioActual() {
-    try {
-        const usuarioStorage = localStorage.getItem('usuario');
-        const navUser = document.getElementById('navUserName');
+    const usuarioStorage = localStorage.getItem('usuario');
+    const navUser = document.getElementById('navUserName');
 
-        if (usuarioStorage && navUser) {
-            const usuario = JSON.parse(usuarioStorage);
-            let nombre = usuario.nombre || usuario.name;
-            if (usuario.alumno) {
-                nombre = `${usuario.alumno.nombre || ''} ${usuario.alumno.apellidoPaterno || ''}`.trim();
-            }
-            navUser.textContent = nombre || usuario.email || 'Alumno';
-        }
-    } catch (e) {
-        console.warn('Error leyendo usuario de localStorage', e);
+    if (!usuarioStorage || !navUser) return;
+
+    const usuario = JSON.parse(usuarioStorage);
+    
+    // Extracción directa según la relación cargada en el controller
+    if (usuario.alumno && usuario.alumno.nombre) {
+        const nombreCompleto = `${usuario.alumno.nombre} ${usuario.alumno.apellidoPaterno || ''}`.trim();
+        navUser.textContent = `${nombreCompleto}`;
+    } else {
+        // En caso de que el usuario no tenga aún un registro en la tabla alumnos
+        navUser.textContent = `${usuario.email}`;
     }
 }
 
@@ -189,7 +257,7 @@ async function cargarPublicaciones() {
     }
 }
 
-// Renderizar Tarjeta de Publicación con opciones de Edición/Eliminación
+// Renderizar Tarjeta de Publicación
 function crearCardPublicacion(post) {
     if (!post) return document.createElement('div');
 
@@ -225,44 +293,58 @@ function crearCardPublicacion(post) {
     // 3. Verificar si es dueño del post
     const esMio = (post.idUsuario && userLocalId && post.idUsuario == userLocalId);
 
-    // 4. Preparar menú HTML en variable separada (sin backticks anidados)
+    // 4. Preparar menú HTML de opciones
     let menuHtml = '';
     if (esMio) {
         const idPost = post.idPublicacion || post.id;
         const titEnc = encodeURIComponent(titulo);
         const contEnc = encodeURIComponent(contenido);
+        const tieneMedia = post.multimedia ? 1 : 0;
+        const fechaProg = post.published_at || '';
 
-        menuHtml = '<div class="dropdown">' +
-            '<button class="btn btn-link text-muted p-0 text-decoration-none fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>' +
-            '<ul class="dropdown-menu dropdown-menu-end shadow-sm">' +
-                '<li><a class="dropdown-item text-warning" href="#" onclick="prepararEdicion(' + idPost + ', \'' + titEnc + '\', \'' + contEnc + '\')">✏️ Editar</a></li>' +
-                '<li><a class="dropdown-item text-danger" href="#" onclick="eliminarPublicacion(' + idPost + ', this)">🗑️ Eliminar</a></li>' +
-            '</ul>' +
-        '</div>';
+        menuHtml = `
+            <div class="dropdown">
+                <button class="btn btn-link text-muted p-0 text-decoration-none fw-bold fs-5" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><a class="dropdown-item text-warning" href="#" onclick="prepararEdicion(${idPost}, '${titEnc}', '${contEnc}', ${tieneMedia}, '${fechaProg}')">✏️ Editar</a></li>
+                    <li><a class="dropdown-item text-danger" href="#" onclick="eliminarPublicacion(${idPost}, this)">🗑️ Eliminar</a></li>
+                </ul>
+            </div>
+        `;
     }
 
     // 5. Preparar título e imagen opcionales
-    const tituloHtml = titulo ? '<h5 class="fw-bold mb-2">' + titulo + '</h5>' : '';
-    const multimediaHtml = post.multimedia ? '<img src="/storage/' + post.multimedia + '" class="img-fluid rounded mt-2 mb-2" alt="Imagen del post">' : '';
+    const tituloHtml = titulo ? `<h5 class="fw-bold mb-2 text-dark">${titulo}</h5>` : '';
+    const multimediaHtml = post.multimedia 
+        ? `<div class="mt-3 text-center">
+             <img src="/storage/${post.multimedia}" class="img-fluid rounded shadow-sm w-100" style="max-height: 400px; object-fit: cover;" alt="Imagen del post">
+           </div>` 
+        : '';
 
-    // 6. Ensamblar HTML limpio
+    // 6. Ensamblar HTML garantizando estructura vertical limpia
     card.innerHTML = `
-        <div class="card-body">
+        <div class="card-body p-3">
+            <!-- Encabezado: Avatar + Nombre + Fecha a la izquierda | Menú a la derecha -->
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="d-flex align-items-center">
-                    <div class="avatar-circle me-3 bg-primary text-white fw-bold d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-radius: 50%;">
+                    <div class="avatar-circle me-3 bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; border-radius: 50%;">
                         ${inicial}
                     </div>
                     <div>
-                        <h6 class="mb-0 fw-bold">${nombreUsuario}</h6>
+                        <h6 class="mb-0 fw-bold text-dark">${nombreUsuario}</h6>
                         <small class="text-muted">${fecha}</small>
                     </div>
                 </div>
                 ${menuHtml}
             </div>
             
-            ${tituloHtml}
-            <p class="card-text text-dark" style="white-space: pre-line;">${contenido}</p>
+            <!-- Contenido Principal: Título y Cuerpo del post -->
+            <div class="w-100 mb-2">
+                ${tituloHtml}
+                <p class="card-text text-dark mb-0" style="white-space: pre-line; word-break: break-word;">${contenido}</p>
+            </div>
+
+            <!-- Imagen (si existe) ocupando el ancho completo -->
             ${multimediaHtml}
         </div>
     `;
@@ -278,6 +360,10 @@ async function crearPublicacion(e) {
     const textareaContenido = document.getElementById('contenidoPublicacion');
     const inputMultimedia = document.getElementById('multimediaPublicacion');
     const inputFecha = document.getElementById('fechaProgramada');
+    
+    // Referencias al checkbox y contenedor de eliminación
+    const checkEliminar = document.getElementById('checkEliminarImagen');
+    const contenedorEliminar = document.getElementById('contenedorEliminarImagen');
     const btn = document.getElementById('btnPublicar');
 
     const titulo = inputTitulo.value.trim();
@@ -286,8 +372,6 @@ async function crearPublicacion(e) {
     if (!titulo || !contenido) return;
 
     const editId = form.dataset.editId;
-    
-    // URL y Método: Si editamos, usamos POST con _method = PUT para permitir multipart/form-data en PHP
     const url = editId ? `/api/publicaciones/${editId}` : '/api/publicaciones';
     
     // Crear objeto FormData para enviar datos + archivo
@@ -295,9 +379,13 @@ async function crearPublicacion(e) {
     formData.append('titulo', titulo);
     formData.append('contenido', contenido);
 
-    // Si editamos, simulamos el verbo PUT requerido por Laravel
+    // Si editamos, enviamos el metodo PUT simulado
     if (editId) {
         formData.append('_method', 'PUT');
+
+        if (checkEliminar && checkEliminar.checked) {
+            formData.append('eliminar_multimedia', '1');
+        }
     }
 
     // Adjuntar archivo multimedia si fue seleccionado
@@ -327,26 +415,30 @@ async function crearPublicacion(e) {
         const response = await fetch(url, getFetchFormDataOptions('POST', formData));
         const responseData = await response.json();
 
-    if (response.ok && responseData.success) {
-        const fechaProgramada = inputFecha ? inputFecha.value : null;
+        if (response.ok && responseData.success) {
+            const fechaProgramada = inputFecha ? inputFecha.value : null;
 
-        // Limpiar campos
-        inputTitulo.value = '';
-        textareaContenido.value = '';
-        if (inputMultimedia) inputMultimedia.value = '';
-        if (inputFecha) inputFecha.value = '';
+            // Limpiar campos del formulario
+            inputTitulo.value = '';
+            textareaContenido.value = '';
+            if (inputMultimedia) inputMultimedia.value = '';
+            if (inputFecha) inputFecha.value = '';
 
-        delete form.dataset.editId;
-        btn.textContent = 'Publicar';
+            // Limpiar y ocultar el checkbox de eliminar imagen
+            if (checkEliminar) checkEliminar.checked = false;
+            if (contenedorEliminar) contenedorEliminar.classList.add('d-none');
 
-        // Notificar si fue programada para el futuro
-        if (fechaProgramada && new Date(fechaProgramada) > new Date()) {
-            alert('Publicación programada con éxito. Se mostrará en el feed en la fecha seleccionada.');
-        }
+            delete form.dataset.editId;
+            btn.textContent = 'Publicar';
 
-        // Recargar el feed desde el servidor (que ya viene filtrado por la API)
-        cargarPublicaciones();
-} else {
+            // Notificar si fue programada para el futuro
+            if (fechaProgramada && new Date(fechaProgramada) > new Date()) {
+                alert('Publicación programada con éxito. Se mostrará en el feed en la fecha seleccionada.');
+            }
+
+            // Recargar el feed
+            cargarPublicaciones();
+        } else {
             alert(responseData.message || responseData.error || 'Error al procesar la publicación');
         }
     } catch (error) {
@@ -379,9 +471,20 @@ async function eliminarPublicacion(idPublicacion, elementoBoton) {
 }
 
 // Cargar datos en el formulario para editar
-function prepararEdicion(idPublicacion, tituloEnc, contenidoEnc, fechaProgramada = '') {
+function prepararEdicion(idPublicacion, tituloEnc, contenidoEnc, tieneMultimedia = 0, fechaProgramada = '') {
     const titulo = decodeURIComponent(tituloEnc);
     const contenido = decodeURIComponent(contenidoEnc);
+    const checkEliminar = document.getElementById('checkEliminarImagen');
+    const contenedorEliminar = document.getElementById('contenedorEliminarImagen');
+
+    if (checkEliminar) checkEliminar.checked = false;
+
+    // Si el post tiene imagen, mostramos la opción de eliminarla
+    if (tieneMultimedia === 1 || tieneMultimedia === true) {
+        if (contenedorEliminar) contenedorEliminar.classList.remove('d-none');
+    } else {
+        if (contenedorEliminar) contenedorEliminar.classList.add('d-none');
+    }
     
     document.getElementById('tituloPublicacion').value = titulo;
     document.getElementById('contenidoPublicacion').value = contenido;
@@ -399,6 +502,29 @@ function prepararEdicion(idPublicacion, tituloEnc, contenidoEnc, fechaProgramada
     form.dataset.editId = idPublicacion;
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function cerrarSesion() {
+    const token = localStorage.getItem('auth_token');
+
+    if (token) {
+        try {
+            await fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+        } catch (e) {
+            console.warn('Error al notificar logout al servidor:', e);
+        }
+    }
+
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/login');
 }
 
     // Helper de Fetch para enviar FormData con archivos e imagen

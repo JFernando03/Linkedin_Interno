@@ -7,27 +7,67 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
+<style>
+    :root {
+        --brand-blue: #0a66c2;
+        --brand-blue-hover: #004182;
+        --brand-gold: #c09018;
+        --brand-gold-hover: #a37a13;
+    }
+
+    /* Fondo azul corporativo para la barra */
+    .bg-brand {
+        background-color: var(--brand-blue) !important;
+    }
+
+    /* Botón Publicar */
+    .btn-brand, #btnPublicar {
+        background-color: var(--brand-blue) !important;
+        border-color: var(--brand-blue) !important;
+        color: #ffffff !important;
+    }
+
+    .btn-brand:hover, #btnPublicar:hover {
+        background-color: var(--brand-blue-hover) !important;
+        border-color: var(--brand-blue-hover) !important;
+    }
+
+    /* Botón Dorado (Cerrar sesión) */
+    .btn-gold {
+        background-color: var(--brand-gold) !important;
+        border-color: var(--brand-gold) !important;
+        color: #ffffff !important;
+    }
+
+    .btn-gold:hover {
+        background-color: var(--brand-gold-hover) !important;
+        border-color: var(--brand-gold-hover) !important;
+    }
+</style>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-brand shadow-sm sticky-top py-2">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/feed">linkedinFIC</a>
-        
-        <div class="d-flex align-items-center gap-3">
-            <!-- Nombre del usuario logueado en la Navbar -->
-            <span class="text-white fw-semibold d-none d-sm-inline" id="navUserName">Cargando...</span>
-            
-            <!-- Botones de Navegación -->
-            <a href="/feed" class="btn btn-outline-light btn-sm fw-semibold">
-                <i class="bi bi-house-door-fill me-1"></i> Inicio (Feed)
-            </a>
 
-            <a href="/perfil" class="btn btn-light btn-sm text-primary fw-bold">
-                <i class="bi bi-person-fill me-1"></i> Mi Perfil
-            </a>
+        <a class="navbar-brand d-flex align-items-center py-0" href="/feed">
+            <div class="bg-white px-2 py-1 rounded-3 shadow-sm d-flex align-items-center" style="height: 42px;">
+                <img src="/images/logofic.webp" alt="LinkedFIC Logo" style="height: 34px; width: auto; object-fit: contain;">
+            </div>
+        </a>
 
-            <!-- Botón de Cerrar Sesión -->
-            <button class="btn btn-outline-light btn-sm" id="btnLogout">Cerrar Sesión</button>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="ms-auto d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                <span id="navUserName" class="text-white fw-bold d-none d-lg-inline"></span>
+                
+                <a href="/feed" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Inicio (Feed)</a>
+                <a href="/perfil" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Mi Perfil</a>
+                
+                <button type="button" id="btnLogout" class="btn btn-gold btn-sm fw-bold rounded-pill px-3">Cerrar Sesión</button>
+            </div>
         </div>
     </div>
 </nav>
@@ -140,10 +180,9 @@
 <script>
 // Diccionario para traducir idCarrera al nombre real de la carrera
 const carrerasMap = {
-    1: 'Ingeniería en Software',
-    2: 'Ingeniería Civil',
-    3: 'Ingeniería en Procesos Industriales',
-    4: 'Licenciatura en Astronomía',
+    1: 'Licenciatura en Informática',
+    2: 'Licenciatura en Informática Modalidad Virtual',
+    3: 'Licenciatura en Ingeniería en Ciencias de Datos',
 };
 
 // Función unificada y segura para obtener el token sin importar la llave
@@ -188,16 +227,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await response.json();
         
         const baseData = res.data || res.usuario || res.user || res;
-        const alumno = baseData.alumno || baseData.persona || baseData;
 
         // --- NOMBRES Y APELLIDOS ---
-        const nombre = alumno.nombre || baseData.nombre || '';
-        const paterno = alumno.apellidoPaterno || alumno.apellido_paterno || baseData.apellidoPaterno || '';
-        const materno = alumno.apellidoMaterno || alumno.apellido_materno || baseData.apellidoMaterno || '';
+        const alumno = res.usuario.alumno || {};
+
+        const nombre = alumno.nombre || '';
+        const paterno = alumno.apellidoPaterno || '';
+        const materno = alumno.apellidoMaterno || '';
+
         const nombreCompleto = `${nombre} ${paterno} ${materno}`.trim();
+        const nombreNav = `${nombre} ${paterno}`.trim();
 
         document.getElementById('profileNombreCompleto').textContent = nombreCompleto || 'Alumno FIC';
-        document.getElementById('navUserName').textContent = nombre || 'Alumno';
+        const navUser = document.getElementById('navUserName');
+        if (navUser) {
+            navUser.textContent = `${nombreNav || 'Alumno'}`;
+        }
         document.getElementById('profileAvatar').textContent = nombre ? nombre.charAt(0).toUpperCase() : 'A';
 
         // --- INFORMACIÓN GENERAL Y CONTACTO ---
