@@ -26,6 +26,9 @@ class AuthController extends Controller
 
         $token = $usuario->createToken('auth_token')->plainTextToken;
 
+        // Carga dinámicamente el perfil correspondiente (alumno o empresa) junto con sus relaciones secundarias
+        $usuario->load(['alumno.carrera', 'empresa.industria']);
+
         return response()->json([
             'message' => 'Inicio de sesión exitoso',
             'access_token' => $token,

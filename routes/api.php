@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarreraController;
+use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\NivelController;
 use App\Http\Controllers\Api\PerfilController;
 use App\Http\Controllers\Api\PublicacionController;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 
 // Ruta para el registro de alumnos (HU-01)
 Route::post('/alumnos', [AlumnoController::class, 'store']);
+// Ruta para el registro de empresas (HU-15)
+Route::post('/empresas', [EmpresaController::class, 'store']);
 
 // Ruta para el inicio de sesion de alumno (HU-02)
 Route::post('/login', [AuthController::class, 'login']);
