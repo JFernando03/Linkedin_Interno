@@ -23,7 +23,6 @@ class StorePublicacionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'idUsuario' => 'required|exists:usuarios,idUsuario',
             'titulo' => 'required|string|max:255',
             'contenido' => 'required|string',
             'multimedia' => 'nullable|file|mimes:jpeg,png,jpg,mp4,mov|max:10240',

@@ -120,6 +120,11 @@
 <!-- Scripts de Lógica del Feed con CRUD completo -->
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
+    const formCrear = document.getElementById('formCrearPublicacion');
+    if (formCrear) {
+        formCrear.addEventListener('submit', crearPublicacion);
+    }
+
     obtenerUsuarioActual(); // Muestra el respaldo rápido primero
     await actualizarUsuarioStorage(); // Trae los datos reales de la API
     cargarPublicaciones();
@@ -291,7 +296,8 @@ function crearCardPublicacion(post) {
     const fecha = fechaOrigen ? new Date(fechaOrigen).toLocaleDateString() : 'Reciente';
 
     // 3. Verificar si es dueño del post
-    const esMio = (post.idUsuario && userLocalId && post.idUsuario == userLocalId);
+    const esMio = post.esMia === true || post.esMia === 1 ||
+        (post.idUsuario && userLocalId && post.idUsuario == userLocalId);
 
     // 4. Preparar menú HTML de opciones
     let menuHtml = '';
@@ -412,7 +418,17 @@ async function crearPublicacion(e) {
     btn.textContent = editId ? 'Guardando...' : 'Publicando...';
 
     try {
-        const response = await fetch(url, getFetchFormDataOptions('POST', formData));
+        const token = localStorage.getItem('auth_token') || localStorage.getItem('token') || '';
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+                // NUNCA colocar 'Content-Type' aquí cuando se usa FormData
+            },
+            body: formData
+        });
         const responseData = await response.json();
 
         if (response.ok && responseData.success) {
@@ -472,8 +488,8 @@ async function eliminarPublicacion(idPublicacion, elementoBoton) {
 
 // Cargar datos en el formulario para editar
 function prepararEdicion(idPublicacion, tituloEnc, contenidoEnc, tieneMultimedia = 0, fechaProgramada = '') {
-    const titulo = decodeURIComponent(tituloEnc);
-    const contenido = decodeURIComponent(contenidoEnc);
+    const titEnc = encodeURIComponent(titulo).replace(/'/g, "%27");
+    const contEnc = encodeURIComponent(contenido).replace(/'/g, "%27");
     const checkEliminar = document.getElementById('checkEliminarImagen');
     const contenedorEliminar = document.getElementById('contenedorEliminarImagen');
 

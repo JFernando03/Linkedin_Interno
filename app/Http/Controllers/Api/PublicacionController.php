@@ -16,6 +16,12 @@ class PublicacionController extends Controller
             ->orderBy('published_at', 'desc')
             ->paginate(10);
 
+        $usuarioId = $request->user()->idUsuario;
+        $publicaciones->getCollection()->transform(function ($publicacion) use ($usuarioId) {
+            $publicacion->setAttribute('esMia', (int) $publicacion->idUsuario === (int) $usuarioId);
+            return $publicacion;
+        });
+
         return response()->json([
             'success' => true,
             'message' => 'Publicaciones obtenidas correctamente',
@@ -26,6 +32,7 @@ class PublicacionController extends Controller
     public function store(StorePublicacionRequest $request){
         try{
             $data = $request->validated();
+            $data['idUsuario'] = $request->user()->idUsuario;
 
             //Manejar imagen o video, si viene en el request
             if($request->hasFile('multimedia')){
