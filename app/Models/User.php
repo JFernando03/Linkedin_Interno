@@ -59,4 +59,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Alumno::class, 'idUsuario', 'idUsuario');
     }
+
+    // Relación: Un usuario tiene un registro de empresa
+    public function empresa()
+    {
+        return $this->hasOne(Empresa::class, 'idUsuario', 'idUsuario');
+    }
 }
