@@ -19,26 +19,38 @@ class UpdatePerfilRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
+        * @return array<string, ValidationRule|array<mixed>|string>
+        */
+        public function rules(): array
     {
-        $userId = $this->user()->idUsuario;
+        $user = $this->user();
+        $userId = $user->idUsuario;
 
-        return [
-            // Campos de usuario
-            'sobreMi'       => 'nullable|string|max:500',
-            'email'         => ['sometimes', 'email', Rule::unique('usuarios', 'email')->ignore($userId, 'idUsuario')],
-            'telefono'      => 'nullable|string|max:20',
-            'avatar'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-
-            // Campos de alumno
-            'nombre'          => 'sometimes|string|max:100',
-            'apellidoPaterno' => 'sometimes|string|max:100',
-            'apellidoMaterno' => 'nullable|string|max:100',
-            'idCarrera'       => 'sometimes|integer|exists:carreras,idCarrera',
-            'curriculum'      => 'nullable|file|mimes:pdf|max:2048',
-            'semestre'        => 'required|integer|min:1',
+        // Reglas comunes para cualquier usuario
+        $rules = [
+            'sobreMi'  => 'nullable|string|max:500',
+            'email'    => ['sometimes', 'email', Rule::unique('usuarios', 'email')->ignore($userId, 'idUsuario')],
+            'telefono' => 'nullable|string|max:20',
+            'avatar'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];
+
+        // Si el usuario es un alumno, añadimos sus reglas específicas
+        if ($user->alumno) {
+            $rules['nombre']          = 'sometimes|string|max:100';
+            $rules['apellidoPaterno'] = 'sometimes|string|max:100';
+            $rules['apellidoMaterno'] = 'nullable|string|max:100';
+            $rules['idCarrera']       = 'sometimes|integer|exists:carreras,idCarrera';
+            $rules['curriculum']      = 'nullable|file|mimes:pdf|max:2048';
+            $rules['semestre']        = 'sometimes|integer|min:1';
+        }
+
+        // Si el usuario es una empresa, añadimos sus reglas específicas
+        if ($user->empresa) {
+            $rules['nombreEmpresa'] = 'sometimes|string|max:255';
+            $rules['idIndustria']   = 'sometimes|integer|exists:industrias,idIndustria';
+            $rules['paginaWeb']     = 'nullable|url|max:255';
+        }
+
+        return $rules;
     }
 }

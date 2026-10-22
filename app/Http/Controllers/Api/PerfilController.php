@@ -37,46 +37,64 @@ class PerfilController extends Controller
         ],200);
     }
 
-    public function update(UpdatePerfilRequest $request){
+    public function update(UpdatePerfilRequest $request)
+    {
         $usuario = $request->user();
         $alumno = $usuario->alumno;
+        $empresa = $usuario->empresa;
 
-        DB::transaction(function () use ($request, $usuario, $alumno) {
+        DB::transaction(function () use ($request, $usuario, $alumno, $empresa) {
+            // 1. Actualizar datos base de la tabla usuarios
             $dataUsuario = $request->only('sobreMi', 'email', 'telefono');
 
-            if($request->hasFile('avatar')){
-                if($usuario->avatar && Storage::disk('public')->exists($usuario->avatar)){
+            if ($request->hasFile('avatar')) {
+                if ($usuario->avatar && Storage::disk('public')->exists($usuario->avatar)) {
                     Storage::disk('public')->delete($usuario->avatar);
                 }
-                $dataUsuario['avatar'] = $request->file('avatar')->store('avatars','public');
+                $dataUsuario['avatar'] = $request->file('avatar')->store('avatars', 'public');
             }
 
             $usuario->fill($dataUsuario);
             $usuario->save();
 
-            $dataAlumno = $request->only('nombre', 'apellidoPaterno', 'apellidoMaterno', 'idCarrera', 'semestre');
+            // 2. Actualizar datos de Alumno si existe
+            if ($alumno) {
+                $dataAlumno = $request->only('nombre', 'apellidoPaterno', 'apellidoMaterno', 'idCarrera', 'semestre');
 
-            if($request->hasFile('curriculum')){
-                if($alumno && $alumno->curriculum && Storage::disk('public')->exists($alumno->curriculum)){
-                    Storage::disk('public')->delete($alumno->curriculum);
+                if ($request->hasFile('curriculum')) {
+                    if ($alumno->curriculum && Storage::disk('public')->exists($alumno->curriculum)) {
+                        Storage::disk('public')->delete($alumno->curriculum);
+                    }
+                    $dataAlumno['curriculum'] = $request->file('curriculum')->store('curriculums', 'public');
                 }
-                $dataAlumno['curriculum'] = $request->file('curriculum')->store('curriculums','public');
+
+                $alumno->update($dataAlumno);
             }
 
-            if($alumno){
-                $alumno->update($dataAlumno);
-            } else {
-                $usuario->alumno()->create($dataAlumno);
+            // 3. Actualizar datos de Empresa si existe
+            if ($empresa) {
+                $dataEmpresa = $request->only('nombreEmpresa', 'idIndustria', 'paginaWeb');
+                $empresa->update($dataEmpresa);
             }
         });
 
-        $usuario->load(['alumno.carrera' , 'alumno.habilidades']);
+        // Cargar dinámicamente las relaciones para la respuesta
+        $relaciones = [];
+        if ($usuario->alumno) {
+            $relaciones[] = 'alumno.carrera';
+            $relaciones[] = 'alumno.habilidades';
+        }
+        if ($usuario->empresa) {
+            $relaciones[] = 'empresa.industria';
+        }
+
+        $usuario->load($relaciones);
 
         return response()->json([
             'success' => true,
             'message' => 'Perfil actualizado exitosamente',
             'usuario' => $usuario,
-        ],200);
+        ], 200);
     }
 
     public function storeHabilidad(StoreHabilidadRequest $request){
