@@ -13,7 +13,22 @@ class PerfilController extends Controller
 {
     public function show(Request $request){
         $usuario = $request->user();
-        $usuario->load(['alumno.carrera', 'alumno.habilidades']);
+
+        // Arreglo base de relaciones, tiene info del rol del usuario
+        $relations = ['rol'];
+
+        // Si el usuario tiene un perfil de alumno
+        if ($usuario->alumno) {
+            $relations[] = 'alumno.carrera';
+            $relations[] = 'alumno.habilidades';
+        }
+
+        // Si el usuario tiene un perfil de empresa
+        if ($usuario->empresa) {
+            $relations[] = 'empresa.industria';
+        }
+
+        $usuario->load($relations);
 
         return response()->json([
             'success' => true,
