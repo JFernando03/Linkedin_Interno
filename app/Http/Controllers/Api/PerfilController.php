@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHabilidadRequest;
 use App\Http\Requests\UpdatePerfilRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -35,6 +36,30 @@ class PerfilController extends Controller
             'message' => 'Perfil obtenido correctamente',
             'usuario' => $usuario,
         ],200);
+    }
+
+    public function showPublic($id){
+        // Buscamos al usuario o lanzamos un error 404 si no existe
+        $usuario = User::with('rol')->findOrFail($id);
+
+        // Definimos las relaciones dinámicamente
+        $relaciones = [];
+
+        if ($usuario->alumno) {
+            $relaciones[] = 'alumno.carrera';
+            $relaciones[] = 'alumno.habilidades';
+        }
+        elseif ($usuario->empresa) {
+            $relaciones[] = 'empresa.industria';
+        }
+
+        $usuario->load($relaciones);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Perfil obtenido correctamente',
+            'usuario' => $usuario,
+        ], 200);
     }
 
     public function update(UpdatePerfilRequest $request)

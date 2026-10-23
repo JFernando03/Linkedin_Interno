@@ -34,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     //Ruta para la edición de perfil de alumno (HU-07)
     Route::put('/perfil', [PerfilController::class, 'update']);
 
+    // Ruta para ver el perfil público de cualquier usuario por su ID
+    Route::get('/usuarios/{id}/perfil', [PerfilController::class, 'showPublic']);
+
     //Ruta para agregar una habilidad al alumno
     Route::post('alumnos/habilidades',[PerfilController::class, 'storeHabilidad']);
     //Ruta para eliminar una habilidad al alumno
