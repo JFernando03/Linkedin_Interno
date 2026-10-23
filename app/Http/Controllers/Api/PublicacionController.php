@@ -13,7 +13,7 @@ class PublicacionController extends Controller
 {
     public function index(Request $request){
         $publicaciones = Publicacion::with('usuario.alumno')
-            ->orderBy('published_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate(10);
 
         $usuarioId = $request->user()->idUsuario;

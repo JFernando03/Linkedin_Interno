@@ -198,7 +198,7 @@ function obtenerUsuarioActual() {
     }
 }
 
-// GET /api/publicaciones -> Cargar Feed
+// GET /api/publicaciones Cargar Feed
 async function cargarPublicaciones() {
     const contenedor = document.getElementById('contenedorFeed');
 
@@ -269,14 +269,14 @@ function crearCardPublicacion(post) {
     const card = document.createElement('div');
     card.className = 'card border-0 shadow-sm mb-3';
 
-    // 1. Obtener ID del usuario en localStorage
+    //Obtener ID del usuario en localStorage
     let userLocalId = null;
     try {
         const localUser = JSON.parse(localStorage.getItem('usuario'));
         if (localUser) userLocalId = localUser.idUsuario || localUser.id;
     } catch(e) {}
 
-    // 2. Extraer datos del Autor
+    //Extraer datos del Autor
     let nombreUsuario = 'Usuario';
     const usuarioObj = post.usuario || post.user;
 
@@ -295,11 +295,11 @@ function crearCardPublicacion(post) {
     const fechaOrigen = post.published_at || post.created_at;
     const fecha = fechaOrigen ? new Date(fechaOrigen).toLocaleDateString() : 'Reciente';
 
-    // 3. Verificar si es dueño del post
+    //Verificar si es dueño del post
     const esMio = post.esMia === true || post.esMia === 1 ||
         (post.idUsuario && userLocalId && post.idUsuario == userLocalId);
 
-    // 4. Preparar menú HTML de opciones
+    //Preparar menú HTML de opciones
     let menuHtml = '';
     if (esMio) {
         const idPost = post.idPublicacion || post.id;
@@ -319,7 +319,7 @@ function crearCardPublicacion(post) {
         `;
     }
 
-    // 5. Preparar título e imagen opcionales
+    //Preparar título e imagen opcionales
     const tituloHtml = titulo ? `<h5 class="fw-bold mb-2 text-dark">${titulo}</h5>` : '';
     const multimediaHtml = post.multimedia 
         ? `<div class="mt-3 text-center">
@@ -327,7 +327,7 @@ function crearCardPublicacion(post) {
            </div>` 
         : '';
 
-    // 6. Ensamblar HTML garantizando estructura vertical limpia
+    //Ensamblar HTML garantizando estructura vertical limpia
     card.innerHTML = `
         <div class="card-body p-3">
             <!-- Encabezado: Avatar + Nombre + Fecha a la izquierda | Menú a la derecha -->
@@ -367,26 +367,28 @@ async function crearPublicacion(e) {
     const inputMultimedia = document.getElementById('multimediaPublicacion');
     const inputFecha = document.getElementById('fechaProgramada');
     
-    // Referencias al checkbox y contenedor de eliminación
     const checkEliminar = document.getElementById('checkEliminarImagen');
     const contenedorEliminar = document.getElementById('contenedorEliminarImagen');
     const btn = document.getElementById('btnPublicar');
 
-    const titulo = inputTitulo.value.trim();
-    const contenido = textareaContenido.value.trim();
+    const titulo = inputTitulo ? inputTitulo.value.trim() : '';
+    const contenido = textareaContenido ? textareaContenido.value.trim() : '';
 
-    if (!titulo || !contenido) return;
+    if (!titulo || !contenido) {
+        alert('El título y el contenido son obligatorios.');
+        return;
+    }
 
-    const editId = form.dataset.editId;
+    const editId = form ? form.dataset.editId : null;
+    
     const url = editId ? `/api/publicaciones/${editId}` : '/api/publicaciones';
     
-    // Crear objeto FormData para enviar datos + archivo
     const formData = new FormData();
     formData.append('titulo', titulo);
     formData.append('contenido', contenido);
 
-    // Si editamos, enviamos el metodo PUT simulado
     if (editId) {
+        // Cambio para que laravel reconozca el put en el FormData
         formData.append('_method', 'PUT');
 
         if (checkEliminar && checkEliminar.checked) {
@@ -394,17 +396,14 @@ async function crearPublicacion(e) {
         }
     }
 
-    // Adjuntar archivo multimedia si fue seleccionado
     if (inputMultimedia && inputMultimedia.files[0]) {
         formData.append('multimedia', inputMultimedia.files[0]);
     }
 
-    // Adjuntar fecha programada si fue seleccionada
     if (inputFecha && inputFecha.value) {
         formData.append('published_at', inputFecha.value);
     }
 
-    // Adjuntar ID del usuario logueado
     try {
         const usuarioStorage = localStorage.getItem('usuario');
         if (usuarioStorage) {
@@ -414,8 +413,10 @@ async function crearPublicacion(e) {
         }
     } catch (e) {}
 
-    btn.disabled = true;
-    btn.textContent = editId ? 'Guardando...' : 'Publicando...';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = editId ? 'Guardando...' : 'Publicando...';
+    }
 
     try {
         const token = localStorage.getItem('auth_token') || localStorage.getItem('token') || '';
@@ -425,43 +426,36 @@ async function crearPublicacion(e) {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json'
-                // NUNCA colocar 'Content-Type' aquí cuando se usa FormData
             },
             body: formData
         });
+
         const responseData = await response.json();
 
-        if (response.ok && responseData.success) {
-            const fechaProgramada = inputFecha ? inputFecha.value : null;
-
-            // Limpiar campos del formulario
-            inputTitulo.value = '';
-            textareaContenido.value = '';
+        if (response.ok && (responseData.success || responseData.idPublicacion || responseData.id || responseData.data)) {
+            if (inputTitulo) inputTitulo.value = '';
+            if (textareaContenido) textareaContenido.value = '';
             if (inputMultimedia) inputMultimedia.value = '';
             if (inputFecha) inputFecha.value = '';
 
-            // Limpiar y ocultar el checkbox de eliminar imagen
             if (checkEliminar) checkEliminar.checked = false;
             if (contenedorEliminar) contenedorEliminar.classList.add('d-none');
 
-            delete form.dataset.editId;
-            btn.textContent = 'Publicar';
+            if (form) delete form.dataset.editId;
 
-            // Notificar si fue programada para el futuro
-            if (fechaProgramada && new Date(fechaProgramada) > new Date()) {
-                alert('Publicación programada con éxito. Se mostrará en el feed en la fecha seleccionada.');
-            }
+            alert(editId ? 'Publicación actualizada correctamente' : 'Publicación creada con éxito');
 
-            // Recargar el feed
             cargarPublicaciones();
         } else {
+            console.error('Error del servidor:', responseData);
             alert(responseData.message || responseData.error || 'Error al procesar la publicación');
         }
     } catch (error) {
+        console.error('Error en fetch:', error);
         alert('Error de conexión con el servidor: ' + error.message);
     } finally {
-        btn.disabled = false;
-        if (!form.dataset.editId) {
+        if (btn) {
+            btn.disabled = false;
             btn.textContent = 'Publicar';
         }
     }
@@ -488,34 +482,38 @@ async function eliminarPublicacion(idPublicacion, elementoBoton) {
 
 // Cargar datos en el formulario para editar
 function prepararEdicion(idPublicacion, tituloEnc, contenidoEnc, tieneMultimedia = 0, fechaProgramada = '') {
-    const titEnc = encodeURIComponent(titulo).replace(/'/g, "%27");
-    const contEnc = encodeURIComponent(contenido).replace(/'/g, "%27");
+    const titulo = decodeURIComponent(tituloEnc);
+    const contenido = decodeURIComponent(contenidoEnc);
+    
     const checkEliminar = document.getElementById('checkEliminarImagen');
     const contenedorEliminar = document.getElementById('contenedorEliminarImagen');
 
     if (checkEliminar) checkEliminar.checked = false;
 
-    // Si el post tiene imagen, mostramos la opción de eliminarla
     if (tieneMultimedia === 1 || tieneMultimedia === true) {
         if (contenedorEliminar) contenedorEliminar.classList.remove('d-none');
     } else {
         if (contenedorEliminar) contenedorEliminar.classList.add('d-none');
     }
     
-    document.getElementById('tituloPublicacion').value = titulo;
-    document.getElementById('contenidoPublicacion').value = contenido;
-    
+    const inputTitulo = document.getElementById('tituloPublicacion');
+    const inputContenido = document.getElementById('contenidoPublicacion');
     const inputFecha = document.getElementById('fechaProgramada');
-    if (inputFecha && fechaProgramada) {
-        // Convertir formato si viene en ISO string
+    
+    if (inputTitulo) inputTitulo.value = titulo;
+    if (inputContenido) inputContenido.value = contenido;
+    
+    if (inputFecha && fechaProgramada && fechaProgramada !== 'null') {
         inputFecha.value = fechaProgramada.slice(0, 16);
     }
 
     const btn = document.getElementById('btnPublicar');
-    btn.textContent = 'Guardar Cambios';
+    if (btn) btn.textContent = 'Guardar Cambios';
     
     const form = document.getElementById('formCrearPublicacion');
-    form.dataset.editId = idPublicacion;
+    if (form) {
+        form.dataset.editId = idPublicacion; // Guardamos el ID a editar
+    }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
