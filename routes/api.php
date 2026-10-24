@@ -24,6 +24,8 @@ Route::get('/carreras', [CarreraController::class,'index']);
 Route::get('/habilidades',[HabilidadController::class,'index']);
 // Ruta para listar el catalogo de niveles disponibles
 Route::get('/niveles', [NivelController::class, 'index']);
+// Ruta para listar el catalogo de industrias disponibles
+Route::get('/industrias', [IndustriaController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Ruta para logout
