@@ -5,40 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inicio de Sesión - Alumnos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        :root {
-            --brand-blue: #0a66c2;
-            --brand-blue-hover: #004182;
-            --brand-gold: #c09018;
-        }
-
-        .bg-brand {
-            background-color: var(--brand-blue) !important;
-        }
-
-        .btn-brand {
-            background-color: var(--brand-blue);
-            border-color: var(--brand-blue);
-            color: #ffffff;
-        }
-
-        .btn-brand:hover, .btn-brand:focus {
-            background-color: var(--brand-blue-hover);
-            border-color: var(--brand-blue-hover);
-            color: #ffffff;
-        }
-
-        .text-brand-gold {
-            color: var(--brand-gold) !important;
-        }
-
-        .form-control:focus {
-            border-color: var(--brand-blue);
-            box-shadow: 0 0 0 0.25rem rgba(10, 102, 194, 0.25);
-        }
-    </style>
-    
+    <link href="{{ asset('css/inicio-sesion-alumno.css') }}" rel="stylesheet">
 </head>
 <body class="bg-light d-flex align-items-center min-vh-100 py-4">
 
@@ -95,79 +62,7 @@
     </div>
 </div>
 
-<script>
-document.getElementById('formLogin').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const alertBox = document.getElementById('alertBox');
-    const btnSubmit = document.getElementById('btnSubmit');
-
-    // Limpiar alertas e indicaciones de validación previas
-    alertBox.classList.add('d-none');
-    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-
-    btnSubmit.disabled = true;
-    btnSubmit.textContent = 'Verificando...';
-
-    const formData = new FormData(this);
-
-    try {
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json'
-            },
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            alertBox.className = 'alert alert-success';
-            alertBox.textContent = data.message || '¡Inicio de sesión exitoso!';
-            alertBox.classList.remove('d-none');
-
-            // Guardar el token de acceso que retorna el AuthController ('access_token')
-            localStorage.setItem('auth_token', data.access_token);
-            localStorage.setItem('usuario', JSON.stringify(data.usuario));
-
-            // Redirigir a la vista de perfil tras 1 segundo
-            setTimeout(() => {
-                window.location.href = '/perfil';
-            }, 1000);
-
-        } else if (response.status === 422) {
-            alertBox.className = 'alert alert-danger';
-            
-            if (data.errors && data.errors.email) {
-                alertBox.textContent = data.errors.email[0];
-            } else {
-                alertBox.textContent = data.message || 'Credenciales incorrectas.';
-            }
-            
-            alertBox.classList.remove('d-none');
-
-            if (data.errors) {
-                Object.keys(data.errors).forEach(field => {
-                    const input = document.getElementById(field);
-                    const errorDiv = document.getElementById(`error-${field}`);
-                    if (input) input.classList.add('is-invalid');
-                    if (errorDiv) errorDiv.textContent = data.errors[field][0];
-                });
-            }
-        } else {
-            throw new Error(data.message || 'Ocurrió un error inesperado al iniciar sesión.');
-        }
-    } catch (error) {
-        alertBox.className = 'alert alert-danger';
-        alertBox.textContent = error.message;
-        alertBox.classList.remove('d-none');
-    } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'Ingresar';
-    }
-});
-</script>
+<script src="{{ asset('js/inicio-sesion-alumno.js') }}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -1,0 +1,35 @@
+    :root {
+        --brand-blue: #0a66c2;
+        --brand-blue-hover: #004182;
+        --brand-gold: #c09018;
+        --brand-gold-hover: #a37a13;
+    }
+
+    /* Fondo azul corporativo para la barra */
+    .bg-brand {
+        background-color: var(--brand-blue) !important;
+    }
+
+    /* Botón Publicar */
+    .btn-brand, #btnPublicar {
+        background-color: var(--brand-blue) !important;
+        border-color: var(--brand-blue) !important;
+        color: #ffffff !important;
+    }
+
+    .btn-brand:hover, #btnPublicar:hover {
+        background-color: var(--brand-blue-hover) !important;
+        border-color: var(--brand-blue-hover) !important;
+    }
+
+    /* Botón Dorado (Cerrar sesión) */
+    .btn-gold {
+        background-color: var(--brand-gold) !important;
+        border-color: var(--brand-gold) !important;
+        color: #ffffff !important;
+    }
+
+    .btn-gold:hover {
+        background-color: var(--brand-gold-hover) !important;
+        border-color: var(--brand-gold-hover) !important;
+    }
