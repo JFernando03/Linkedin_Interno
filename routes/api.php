@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarreraController;
+use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\IndustriaController;
 use App\Http\Controllers\Api\NivelController;
@@ -56,4 +57,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/publicaciones/{idPublicacion}', [PublicacionController::class,'update']);
     //Ruta para eliminar una publicacion
     Route::delete('/publicaciones/{idPublicacion}', [PublicacionController::class, 'destroy']);
+
+    Route::get('/conversaciones', [ChatController::class, 'obtenerConversaciones']);
+    Route::get('/mensajes/{destinatarioId}', [ChatController::class, 'obtenerMensajes']);
+    Route::post('/mensajes', [ChatController::class, 'enviarMensaje']);
 });

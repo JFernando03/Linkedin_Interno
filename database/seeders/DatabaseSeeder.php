@@ -2,10 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\Alumno;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
 
 class DatabaseSeeder extends Seeder
 {
@@ -77,5 +80,51 @@ class DatabaseSeeder extends Seeder
             ['nombre' => 'Francés'],
             ['nombre' => 'Español'],
         ]);
+
+        // --- Alumno 1 ---
+        $user1 = User::firstOrCreate(
+            ['email' => 'isma@gmail.com'],
+            [
+                'email' => 'isma@gmail.com',
+                'password' => Hash::make('123456'),
+                'idRol' => 1,
+                'sobreMi' => 'Estudiante de Informatica',
+                'telefono' => '1122334455'
+            ]
+        );
+
+        Alumno::firstOrCreate(
+            ['idUsuario' => $user1->idUsuario],
+            [
+                'nombre' => 'Ismael',
+                'apellidoPaterno' => 'López',
+                'apellidoMaterno' => 'Ojeda',
+                'idCarrera' => 1,
+                'semestre' => 6,
+            ]
+        );
+
+        // --- Alumno 2 ---
+        $user2 = User::firstOrCreate(
+            ['email' => 'fer@gmail.com'],
+            [
+                'email' => 'fer@gmail.com',
+                'password' => Hash::make('123456'),
+                'idRol' => 1,
+                'sobreMi' => 'Estudiante de Informatica',
+                'telefono' => '1122334455'
+            ]
+        );
+
+        Alumno::firstOrCreate(
+            ['idUsuario' => $user2->idUsuario],
+            [
+                'nombre' => 'Johan Fernando',
+                'apellidoPaterno' => 'Mora',
+                'apellidoMaterno' => 'Bojorquez',
+                'idCarrera' => 1,
+                'semestre' => 6,
+            ]
+        );
     }
 }

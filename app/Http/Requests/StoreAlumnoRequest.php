@@ -32,7 +32,7 @@ class StoreAlumnoRequest extends FormRequest
             'apellidoPaterno' => 'required|string|max:50',
             'apellidoMaterno' => 'required|string|max:50',
             'idCarrera' => 'required|exists:carreras,idCarrera',
-            'curriculum' => 'required|file|mimes:pdf,doc,docx|max:2048',
+            'curriculum' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
             'semestre' => 'required|integer|min:1',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];

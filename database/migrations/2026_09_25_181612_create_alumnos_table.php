@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('apellidoPaterno');
             $table->string('apellidoMaterno');
             $table->foreignId('idCarrera')->constrained('carreras','idCarrera')->onDelete('cascade');
-            $table->string('curriculum');
+            $table->string('curriculum')->nullable();
         });
     }
 
