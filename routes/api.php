@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarreraController;
 use App\Http\Controllers\Api\EmpresaController;
+use App\Http\Controllers\Api\IndustriaController;
 use App\Http\Controllers\Api\NivelController;
 use App\Http\Controllers\Api\PerfilController;
 use App\Http\Controllers\Api\PublicacionController;
