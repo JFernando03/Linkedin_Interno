@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarreraController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\EmpresaController;
+use App\Http\Controllers\Api\FeedController;
 use App\Http\Controllers\Api\IndustriaController;
 use App\Http\Controllers\Api\NivelController;
 use App\Http\Controllers\Api\PerfilController;
@@ -63,6 +64,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/vacantes', [VacanteController::class, 'index']);
     // Ruta para crear vacantes (HU-22)
     Route::post('/vacantes', [VacanteController::class, 'store']);
+
+    // Ruta de Feed unificado
+    Route::get('/feed', [FeedController::class, 'index']);
 
     Route::get('/conversaciones', [ChatController::class, 'obtenerConversaciones']);
     Route::get('/mensajes/{destinatarioId}', [ChatController::class, 'obtenerMensajes']);
