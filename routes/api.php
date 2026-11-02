@@ -59,6 +59,8 @@ Route::middleware('auth:sanctum')->group(function () {
     //Ruta para eliminar una publicacion
     Route::delete('/publicaciones/{idPublicacion}', [PublicacionController::class, 'destroy']);
 
+    //Ruta para ver publicaciones
+    Route::get('/vacantes', [VacanteController::class, 'index']);
     // Ruta para crear vacantes (HU-22)
     Route::post('/vacantes', [VacanteController::class, 'store']);
 

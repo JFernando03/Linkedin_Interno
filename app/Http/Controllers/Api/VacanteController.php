@@ -13,9 +13,23 @@ class VacanteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $vacantes = Vacante::with(['usuario.empresa', 'modalidad'])
+        ->orderBy('published_at', 'desc')
+        ->paginate(10);
+
+        $usuarioId = $request->user()->idUsuario;
+        $vacantes->getCollection()->transform(function ($vacante) use ($usuarioId) {
+            $vacante->setAttribute('esMia', (int) $vacante->idUsuario === (int) $usuarioId);
+            return $vacante;
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Vacantes obtenidas correctamente',
+            'vacantes' => $vacantes
+        ], 200);
     }
 
     /**
