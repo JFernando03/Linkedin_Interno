@@ -65,36 +65,45 @@ class PublicacionController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Publicación no encontrada',
-                ]);
+                ], 404);
+            }
+
+            // Verificar que el usuario autenticado sea el dueño de la publicación
+            if ($publicacion->idUsuario !== $request->user()->idUsuario) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes autorización para editar esta publicación',
+                ], 403);
             }
 
             $data = $request->validated();
 
-            //Manejar el archivo multimedia si se envia uno nuevo
+            // Manejar el archivo multimedia si se envía uno nuevo
             if($request->hasFile('multimedia')){
-                //Si tenia un archivo lo eliminamos del Storage publico
+                // Si tenía un archivo anterior, lo eliminamos del Storage público
                 if($publicacion->multimedia && Storage::disk('public')->exists($publicacion->multimedia)){
                     Storage::disk('public')->delete($publicacion->multimedia);
                 }
 
-                //Guardar nueva multimedia
+                // Guardar nueva multimedia
                 $data['multimedia'] = $request->file('multimedia')->store('publicaciones','public');
             }
 
-            //Actualizar publicacion con los datos validados
+            // Actualizar publicación con los datos validados
             $publicacion->update($data);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Publicación actualizada exitosamente',
                 'publicacion' => $publicacion
-            ]);
+            ], 200);
+
         } catch (\Exception $e){
             return response()->json([
                 'success' => false,
-                'message' => 'Ocurrio un error en el servidor',
+                'message' => 'Ocurrió un error en el servidor',
                 'error' => $e->getMessage(),
-            ]);
+            ], 500);
         }
     }
 
