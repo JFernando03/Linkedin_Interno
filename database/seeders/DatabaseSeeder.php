@@ -81,6 +81,13 @@ class DatabaseSeeder extends Seeder
             ['nombre' => 'Español'],
         ]);
 
+        // 6. Insertar el catálogo de modalidades (antes de los usuarios/alumnos)
+        DB::table('modalidades')->insert([
+            ['nombre' => 'Presencial'],
+            ['nombre' => 'Remoto'],
+            ['nombre' => 'Híbrido'],
+        ]);
+
         // --- Alumno 1 ---
         $user1 = User::firstOrCreate(
             ['email' => 'isma@gmail.com'],
