@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Vacante extends Model
 {
@@ -12,6 +13,15 @@ class Vacante extends Model
     protected $table = 'vacantes';
     protected $primaryKey = 'idVacante';
     protected $guarded = [];
+
+    protected static function booted()
+    {
+        static::creating(function ($vacante) {
+            if (empty($vacante->published_at)) {
+                $vacante->published_at = Carbon::now();
+            }
+        });
+    }
 
     // Relación con el usuario
     public function usuario()

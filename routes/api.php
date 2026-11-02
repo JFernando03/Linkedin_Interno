@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\NivelController;
 use App\Http\Controllers\Api\PerfilController;
 use App\Http\Controllers\Api\PublicacionController;
 use App\Http\Controllers\Api\HabilidadController;
+use App\Http\Controllers\Api\VacanteController;
 use Illuminate\Support\Facades\Route;
 
 // Ruta para el registro de alumnos (HU-01)
@@ -57,6 +58,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/publicaciones/{idPublicacion}', [PublicacionController::class,'update']);
     //Ruta para eliminar una publicacion
     Route::delete('/publicaciones/{idPublicacion}', [PublicacionController::class, 'destroy']);
+
+    // Ruta para crear vacantes (HU-22)
+    Route::post('/vacantes', [VacanteController::class, 'store']);
 
     Route::get('/conversaciones', [ChatController::class, 'obtenerConversaciones']);
     Route::get('/mensajes/{destinatarioId}', [ChatController::class, 'obtenerMensajes']);
