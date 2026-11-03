@@ -1,179 +1,157 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Cargar catálogos dinámicos
     cargarCarreras();
     cargarIndustrias();
 
-    const formAlumno = document.getElementById('formRegistroAlumno');
-    if (formAlumno) {
-        formAlumno.addEventListener('submit', registrarAlumno);
+    // 2. Escuchar cambios en la carrera para actualizar semestres dinámicamente
+    const selectCarrera = document.getElementById('selectCarrera');
+    if (selectCarrera) {
+        selectCarrera.addEventListener('change', function () {
+            const optionSeleccionada = this.options[this.selectedIndex];
+            const totalSemestres = optionSeleccionada ? optionSeleccionada.getAttribute('data-semestres') : null;
+            actualizarOpcionesSemestre(totalSemestres);
+        });
     }
+
+    // 3. Listeners de envío
+    const formAlumno = document.getElementById('formRegistroAlumno');
+    if (formAlumno) formAlumno.addEventListener('submit', registrarAlumno);
 
     const formEmpresa = document.getElementById('formRegistroEmpresa');
-    if (formEmpresa) {
-        formEmpresa.addEventListener('submit', registrarEmpresa);
-    }
+    if (formEmpresa) formEmpresa.addEventListener('submit', registrarEmpresa);
 });
 
-let listaCarreras = []; // Guardará las carreras obtenidas del API
+// Cargar carreras dinámicamente desde el endpoint de la API
+function cargarCarreras() {
+    fetch('/api/carreras', {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error al obtener las carreras.');
+        return response.json();
+    })
+    .then(data => {
+        const carreras = data.data || data.carreras || data;
+        const selectCarrera = document.getElementById('selectCarrera');
+        if (!selectCarrera) return;
 
-// GET /api/carreras
-async function cargarCarreras() {
-    const selectCarrera = document.getElementById('selectCarrera');
-    if (!selectCarrera) return;
+        selectCarrera.innerHTML = '<option value="" selected disabled>Selecciona tu carrera</option>';
 
-    try {
-        const response = await fetch('/api/carreras');
-        const data = await response.json();
-        
-        listaCarreras = data.carreras || data.data || data;
-        selectCarrera.innerHTML = '<option value="">Selecciona tu carrera...</option>';
-        
-        listaCarreras.forEach(c => {
-            const nombre = c.carrera || c.nombreCarrera || c.nombre;
-            selectCarrera.innerHTML += `<option value="${c.idCarrera}">${nombre}</option>`;
+        carreras.forEach(carrera => {
+            const option = document.createElement('option');
+            const id = carrera.idCarrera || carrera.id_carrera || carrera.id;
+            const nombre = carrera.carrera || carrera.nombre;
+            const semestres = carrera.semestres || carrera.total_semestres || 10;
+
+            option.value = id;
+            option.textContent = nombre;
+            option.setAttribute('data-semestres', semestres);
+
+            selectCarrera.appendChild(option);
         });
-
-        // Evento: al seleccionar/cambiar de carrera, actualizamos los semestres
-        selectCarrera.addEventListener('change', actualizarOpcionesSemestre);
-
-    } catch (e) {
-        selectCarrera.innerHTML = '<option value="">Error al cargar carreras</option>';
-    }
+    })
+    .catch(error => console.error('Error cargando carreras:', error));
 }
 
-// Función dinama que limita y genera las opciones de semestre
-function actualizarOpcionesSemestre() {
-    const selectCarrera = document.getElementById('selectCarrera');
+// Cargar industrias para el formulario de empresa
+function cargarIndustrias() {
+    fetch('/api/industrias', {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const industrias = data.data || data.industrias || data;
+        const selectIndustria = document.getElementById('selectIndustria');
+        if (!selectIndustria) return;
+
+        selectIndustria.innerHTML = '<option value="" selected disabled>Selecciona tu industria</option>';
+        industrias.forEach(ind => {
+            const option = document.createElement('option');
+            option.value = ind.idIndustria || ind.id;
+            option.textContent = ind.nombreIndustria || ind.industria || ind.nombre;
+            selectIndustria.appendChild(option);
+        });
+    })
+    .catch(error => console.error('Error cargando industrias:', error));
+}
+
+// Generar dinámicamente las opciones del select de semestres
+function actualizarOpcionesSemestre(totalSemestres) {
     const selectSemestre = document.getElementById('selectSemestre');
-    
-    const idCarreraSeleccionada = selectCarrera.value;
-    
-    if (!idCarreraSeleccionada) {
-        selectSemestre.innerHTML = '<option value="">Selecciona primero una carrera</option>';
+    if (!selectSemestre) return;
+
+    selectSemestre.innerHTML = '';
+
+    if (!totalSemestres) {
+        selectSemestre.innerHTML = '<option value="" selected disabled>Selecciona primero una carrera</option>';
         selectSemestre.disabled = true;
         return;
     }
 
-    const carreraEncontrada = listaCarreras.find(c => c.idCarrera == idCarreraSeleccionada);
-    const totalSemestres = carreraEncontrada ? (carreraEncontrada.semestres || 10) : 10;
-
-    selectSemestre.innerHTML = '<option value="">Selecciona tu semestre...</option>';
-    for (let i = 1; i <= totalSemestres; i++) {
-        selectSemestre.innerHTML += `<option value="${i}">${i}.º Semestre</option>`;
-    }
-    
     selectSemestre.disabled = false;
-}
+    selectSemestre.innerHTML = '<option value="" selected disabled>Selecciona tu semestre</option>';
 
-// GET /api/industrias
-async function cargarIndustrias() {
-    const select = document.getElementById('selectIndustria');
-    if (!select) return;
-
-    try {
-        const response = await fetch('/api/industrias');
-        const data = await response.json();
-
-        if (data.success && Array.isArray(data.industrias)) {
-            select.innerHTML = '<option value="">Selecciona una industria...</option>';
-            data.industrias.forEach(ind => {
-                select.innerHTML += `<option value="${ind.idIndustria}">${ind.industria || ind.nombre}</option>`;
-            });
-        }
-    } catch (e) {
-        select.innerHTML = '<option value="">Error al cargar industrias</option>';
+    for (let i = 1; i <= parseInt(totalSemestres); i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `Semestre ${i}`;
+        selectSemestre.appendChild(option);
     }
 }
 
+// Registro de Alumnos
 async function registrarAlumno(e) {
     e.preventDefault();
 
-    const btn = document.getElementById('btnRegistroAlumno');
-    if (btn) btn.disabled = true;
+    const btnSubmit = document.getElementById('btnRegistroAlumno');
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Guardando...';
+    }
+
+    // Al usar FormData(this) enviamos directamente todos los inputs con sus nombres HTML (nombre, sobreMi, curriculum, etc.)
+    const formData = new FormData(this);
+    formData.append('idRol', 1);
 
     try {
-        const formData = new FormData();
-
-        // Datos requeridos
-        formData.append('idRol', 1);
-        formData.append('nombre', document.getElementById('nombreAlumno').value.trim());
-        formData.append('apellidoPaterno', document.getElementById('apellidoPaternoAlumno').value.trim());
-        formData.append('apellidoMaterno', document.getElementById('apellidoMaternoAlumno').value.trim());
-        formData.append('idCarrera', document.getElementById('selectCarrera').value);
-        formData.append('email', document.getElementById('emailAlumno').value.trim());
-        formData.append('password', document.getElementById('passwordAlumno').value);
-
-        // Semestre tomado directamente del selector dinámico generado por la API
-        const semestreVal = document.getElementById('selectSemestre')?.value || "1";
-        formData.append('semestre', semestreVal);
-
-        // Campos opcionales (Solo se adjuntan si el usuario escribió algo)
-        const tel = document.getElementById('telefonoAlumno')?.value.trim();
-        if (tel) {
-            formData.append('telefono', tel);
-        }
-
-        const avatarInput = document.getElementById('avatarAlumno');
-        if (avatarInput?.files[0]) {
-            formData.append('avatar', avatarInput.files[0]);
-        }
-
-        const cvInput = document.getElementById('curriculumAlumno');
-        if (cvInput?.files[0]) {
-            formData.append('curriculum', cvInput.files[0]);
-        }
-
         const response = await fetch('/api/alumnos', {
             method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-            }
+            headers: { 'Accept': 'application/json' },
+            body: formData
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            alert('¡Registro de alumno exitoso!');
-            window.location.href = '/login';
+            alert(data.message || '¡Alumno registrado correctamente! Redirigiendo al inicio de sesión...');
+            this.reset();
+            actualizarOpcionesSemestre(null);
+            setTimeout(() => { window.location.href = '/login'; }, 1500);
         } else {
-            alert(data.message || 'Error en el registro');
+            alert(data.message || 'Ocurrió un error al registrar al alumno.');
         }
-
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ocurrió un error al procesar la solicitud');
+        alert('Error en el servidor: ' + error.message);
     } finally {
-        if (btn) btn.disabled = false;
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Registrar Alumno';
+        }
     }
 }
 
-// POST /api/empresas
+// Registro de Empresas
 async function registrarEmpresa(e) {
     e.preventDefault();
-    const btn = document.getElementById('btnRegistroEmpresa');
-    btn.disabled = true;
 
-    const formData = new FormData();
-    formData.append('idRol', 2); // Ajusta el ID según el rol correspondiente a Empresa en tu BD
-    formData.append('nombreEmpresa', document.getElementById('nombreEmpresa').value.trim());
-    formData.append('idIndustria', document.getElementById('selectIndustria').value);
-    formData.append('email', document.getElementById('emailEmpresa').value.trim());
-    formData.append('password', document.getElementById('passwordEmpresa').value);
-
-    const web = document.getElementById('paginaWeb').value.trim();
-    if (web) formData.append('paginaWeb', web);
-
-    // Provisional para enviar un string vacío si no hay teléfono, ya que el backend espera un string
-    const telEmpresa = document.getElementById('telefonoEmpresa')?.value.trim() || "";
-    formData.append('telefono', telEmpresa); // Manda '' en lugar de omitirlo o mandar null
-
-    const sobreMi = document.getElementById('sobreMiEmpresa').value.trim();
-    if (sobreMi) formData.append('sobreMi', sobreMi);
-
-    const avatarInput = document.getElementById('avatarEmpresa');
-    if (avatarInput && avatarInput.files[0]) {
-        formData.append('avatar', avatarInput.files[0]);
+    const btnSubmit = document.getElementById('btnRegistroEmpresa');
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Guardando...';
     }
+
+    const formData = new FormData(this);
+    formData.append('idRol', 2);
 
     try {
         const response = await fetch('/api/empresas', {
@@ -183,15 +161,20 @@ async function registrarEmpresa(e) {
         });
 
         const data = await response.json();
-        if (response.ok && data.success) {
-            alert('¡Empresa registrada exitosamente! Ya puedes iniciar sesión.');
-            window.location.href = '/login';
+
+        if (response.ok) {
+            alert(data.message || '¡Empresa registrada correctamente! Redirigiendo al inicio de sesión...');
+            this.reset();
+            setTimeout(() => { window.location.href = '/login'; }, 1500);
         } else {
-            alert(data.message || data.error || 'Error al registrar empresa');
+            alert(data.message || 'Ocurrió un error al registrar la empresa.');
         }
     } catch (error) {
-        alert('Error de conexión: ' + error.message);
+        alert('Error en el servidor: ' + error.message);
     } finally {
-        btn.disabled = false;
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Registrar Empresa';
+        }
     }
 }

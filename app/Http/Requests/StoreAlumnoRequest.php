@@ -26,7 +26,7 @@ class StoreAlumnoRequest extends FormRequest
             'idRol' => 'required|exists:roles,idRol',
             'email' => 'required|string|email|max:50|unique:usuarios,email',
             'password' => 'required|string|min:6',
-            'telefono' => 'required|string|max:10',
+            'telefono' => 'nullable|string|max:10',
             'sobreMi' => 'nullable|string',
             'nombre' => 'required|string|max:50',
             'apellidoPaterno' => 'required|string|max:50',
