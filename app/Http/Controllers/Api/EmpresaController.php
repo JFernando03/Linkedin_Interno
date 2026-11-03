@@ -19,7 +19,7 @@ class EmpresaController extends Controller
                 'idRol' => $request->idRol,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'telefono' => $request->telefono,
+                'telefono' => $request->telefono ?? '', // Si no se envía, se guarda como string vacío
                 'sobreMi' => $request->sobreMi,
             ];
 

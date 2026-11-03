@@ -36,7 +36,7 @@ class AlumnoController extends Controller
                     'idRol' => $data['idRol'],
                     'email' => $data['email'],
                     'password' => Hash::make($data['password']),
-                    'telefono' => $data['telefono'],
+                    'telefono' => $data['telefono'] ?? '', // Si no se envía, se guarda como string vacío
                     'sobreMi' => $data['sobreMi'] ?? null,
                 ];
 
