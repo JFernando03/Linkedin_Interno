@@ -1,10 +1,38 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const radios = document.querySelectorAll('input[name="tipoPerfil"]');
+    const tituloLogin = document.getElementById('tituloLogin');
+    const inputTipo = document.getElementById('inputTipo');
+    const enlaceRegistro = document.getElementById('enlaceRegistro');
+
+    if (radios.length > 0) {
+        radios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.value === 'empresa') {
+                    if (tituloLogin) tituloLogin.textContent = 'Iniciar Sesión - Empresa';
+                    if (inputTipo) inputTipo.value = 'empresa';
+                    if (enlaceRegistro) {
+                        enlaceRegistro.href = '/registro-empresa';
+                        enlaceRegistro.textContent = '¿No tienes cuenta de empresa? Regístrate aquí';
+                    }
+                } else {
+                    if (tituloLogin) tituloLogin.textContent = 'Iniciar Sesión - Alumno';
+                    if (inputTipo) inputTipo.value = 'alumno';
+                    if (enlaceRegistro) {
+                        enlaceRegistro.href = '/registro-alumno';
+                        enlaceRegistro.textContent = '¿No tienes cuenta? Regístrate aquí';
+                    }
+                }
+            });
+        });
+    }
+});
+
 document.getElementById('formLogin').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const alertBox = document.getElementById('alertBox');
     const btnSubmit = document.getElementById('btnSubmit');
 
-    // Limpiar alertas e indicaciones de validación previas
     alertBox.classList.add('d-none');
     document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
 
@@ -29,13 +57,24 @@ document.getElementById('formLogin').addEventListener('submit', async function (
             alertBox.textContent = data.message || '¡Inicio de sesión exitoso!';
             alertBox.classList.remove('d-none');
 
-            // Guardar el token de acceso que retorna el AuthController ('access_token')
-            localStorage.setItem('auth_token', data.access_token);
-            localStorage.setItem('usuario', JSON.stringify(data.usuario));
+            const token = data.access_token || data.token;
+            localStorage.setItem('auth_token', token);
+            localStorage.setItem('token', token);
 
-            // Redirigir a la vista de perfil tras 1 segundo
+            const usuario = data.usuario || data.user || {};
+            localStorage.setItem('usuario', JSON.stringify(usuario));
+
+            // --- DETECCIÓN DIRECTA SEGÚN EL SELECTOR VISUAL ---
+            const inputTipo = document.getElementById('inputTipo');
+            const tipoSeleccionado = inputTipo ? inputTipo.value : 'alumno';
+
+            const rutaDestino = (tipoSeleccionado === 'empresa') ? '/perfil/empresa' : '/perfil';
+
+            console.log("Tipo seleccionado en la vista:", tipoSeleccionado);
+            console.log("Redirigiendo a:", rutaDestino);
+
             setTimeout(() => {
-                window.location.href = '/perfil';
+                window.location.href = rutaDestino;
             }, 1000);
 
         } else if (response.status === 422) {

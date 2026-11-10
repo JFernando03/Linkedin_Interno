@@ -29,3 +29,11 @@ Route::get('/perfil/editar', function () {
 Route::get('/feed', function () {
     return view('visualizacion-feed');
 });
+// Ruta para ver el perfil de la empresa
+Route::get('/perfil/empresa', function () {
+    return view('visualizacion-perfil-empresa');
+});
+
+Route::get('/perfil/empresa/editar', function () {
+    return view('edicion-perfil-empresa');
+});

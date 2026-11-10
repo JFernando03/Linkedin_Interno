@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de Sesión - Alumnos</title>
+    <title>Inicio de Sesión - linkedinFIC</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/inicio-sesion-alumno.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
 <body class="bg-light d-flex align-items-center min-vh-100 py-4">
 
@@ -13,7 +14,7 @@
     <div class="row justify-content-center">
         <div class="col-md-5 col-lg-4">
             
-            <!-- 1. CONTENEDOR DEL LOGO DE LA MARCA -->
+            <!-- Logo de la Marca -->
             <div class="text-center mb-4">
                 <img src="/images/logofic.webp" alt="LinkedFIC Logo" class="img-fluid" style="max-width: 240px; height: auto;">
             </div>
@@ -21,7 +22,7 @@
             <!-- Tarjeta de Login -->
             <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-header bg-brand text-white text-center py-3 rounded-top-3">
-                    <h5 class="mb-0 fw-bold">Iniciar Sesión</h5>
+                    <h5 class="mb-0 fw-bold" id="tituloLogin">Iniciar Sesión</h5>
                 </div>
                 <div class="card-body p-4">
 
@@ -52,7 +53,7 @@
 
                         <!-- Enlace al Registro -->
                         <div class="text-center">
-                            <a href="/registro-alumno" class="text-brand-gold text-decoration-none fw-bold">Regístrate aquí</a>
+                            <a href="/registro-alumno" class="text-brand-gold text-decoration-none fw-bold">¿No tienes cuenta? Regístrate aquí</a>
                         </div>
 
                     </form>
@@ -62,8 +63,8 @@
     </div>
 </div>
 
+<!-- Script Externo Separado -->
 <script src="{{ asset('js/inicio-sesion-alumno.js') }}"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
