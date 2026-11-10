@@ -8,7 +8,9 @@ class StoreVacanteRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+    
+        return $user && in_array((int) $user->idRol, [2, 3]);
     }
 
     public function rules(): array
