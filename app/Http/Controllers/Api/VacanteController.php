@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreVacanteRequest;
+use App\Http\Requests\UpdateVacanteRequest;
 use App\Models\Vacante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -77,9 +78,58 @@ class VacanteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateVacanteRequest $request, $idVacante)
     {
-        //
+        try {
+            // 1. Buscar la vacante
+            $vacante = Vacante::find($idVacante);
+
+            if (!$vacante) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vacante no encontrada',
+                ], 404);
+            }
+
+            // 2. Verificar que sea la empresa creadora
+            if ($vacante->idUsuario !== $request->user()->idUsuario) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes autorización para editar esta vacante',
+                ], 403);
+            }
+
+            $data = $request->validated();
+
+            // 3. Manejar archivo multimedia si se envía uno nuevo
+            if ($request->hasFile('multimedia')) {
+                if ($vacante->multimedia && Storage::disk('public')->exists($vacante->multimedia)) {
+                    Storage::disk('public')->delete($vacante->multimedia);
+                }
+
+                $data['multimedia'] = $request->file('multimedia')->store('vacantes', 'public');
+            }
+
+            // 4. Actualizar registro
+            $vacante->update($data);
+
+            // Cargar relaciones para la respuesta
+            $vacante->load(['usuario.empresa', 'modalidad']);
+            $vacante->setAttribute('esMia', true);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Vacante actualizada exitosamente',
+                'vacante' => $vacante
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error en el servidor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

@@ -64,11 +64,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/vacantes', [VacanteController::class, 'index']);
     // Ruta para crear vacantes (HU-22)
     Route::post('/vacantes', [VacanteController::class, 'store']);
+    //Ruta para editar vacantes (HU-23)
+    Route::put('/vacantes/{id}', [VacanteController::class, 'update']);
 
     // Ruta de Feed unificado
     Route::get('/feed', [FeedController::class, 'index']);
 
+    //Ruta para ver todas las conversaciones del usuario
     Route::get('/conversaciones', [ChatController::class, 'obtenerConversaciones']);
+    //Ruta para ver historial de mensajes del usuario con otro usuario
     Route::get('/mensajes/{destinatarioId}', [ChatController::class, 'obtenerMensajes']);
+    //Ruta para mandar mensajes a otro usuario (HU-14)
     Route::post('/mensajes', [ChatController::class, 'enviarMensaje']);
 });
