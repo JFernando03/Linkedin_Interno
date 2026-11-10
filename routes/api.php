@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\FeedController;
 use App\Http\Controllers\Api\IndustriaController;
+use App\Http\Controllers\Api\InteresController;
 use App\Http\Controllers\Api\NivelController;
 use App\Http\Controllers\Api\PerfilController;
 use App\Http\Controllers\Api\PublicacionController;
@@ -78,4 +79,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mensajes/{destinatarioId}', [ChatController::class, 'obtenerMensajes']);
     //Ruta para mandar mensajes a otro usuario (HU-14)
     Route::post('/mensajes', [ChatController::class, 'enviarMensaje']);
+
+    // Ruta para que una empresa muestre interes a un alumno
+    Route::post('/alumnos/{id}/interes', [InteresController::class, 'store']);
+    // Ruta para ver las notificaciones
+    Route::get('/notificaciones', [InteresController::class, 'misNotificaciones']);
 });
