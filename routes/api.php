@@ -66,6 +66,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vacantes', [VacanteController::class, 'store']);
     //Ruta para editar vacantes (HU-23)
     Route::put('/vacantes/{id}', [VacanteController::class, 'update']);
+    //Ruta para eliminar vacantes (HU-24)
+    Route::delete('/vacantes/{id}', [VacanteController::class, 'destroy']);
 
     // Ruta de Feed unificado
     Route::get('/feed', [FeedController::class, 'index']);

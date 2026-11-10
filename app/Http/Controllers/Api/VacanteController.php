@@ -135,8 +135,50 @@ class VacanteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, $idVacante)
     {
-        //
+        try {
+            // 1. Buscar la vacante
+            $vacante = Vacante::find($idVacante);
+
+            if (!$vacante) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vacante no encontrada',
+                ], 404);
+            }
+
+            $usuario = $request->user();
+            $esAdmin = (int) $usuario->idRol === 3;
+            $esOwner = (int) $vacante->idUsuario === (int) $usuario->idUsuario;
+
+            // Verificar permisos (Solo el dueño o un Administrador)
+            if (!$esAdmin && !$esOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes autorización para eliminar esta vacante',
+                ], 403);
+            }
+
+            // 3. Eliminar el archivo multimedia asociado si existe
+            if ($vacante->multimedia && Storage::disk('public')->exists($vacante->multimedia)) {
+                Storage::disk('public')->delete($vacante->multimedia);
+            }
+
+            // 4. Borrar el registro de la base de datos
+            $vacante->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Vacante eliminada exitosamente',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error en el servidor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
