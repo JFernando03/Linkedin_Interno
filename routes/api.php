@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\FeedController;
 use App\Http\Controllers\Api\IndustriaController;
 use App\Http\Controllers\Api\InteresController;
+use App\Http\Controllers\Api\ModalidadController;
 use App\Http\Controllers\Api\NivelController;
 use App\Http\Controllers\Api\PerfilController;
 use App\Http\Controllers\Api\PublicacionController;
@@ -31,6 +32,8 @@ Route::get('/habilidades',[HabilidadController::class,'index']);
 Route::get('/niveles', [NivelController::class, 'index']);
 // Ruta para listar el catalogo de industrias disponibles
 Route::get('/industrias', [IndustriaController::class, 'index']);
+// Ruta para listar el catalogo de modalidades disponibles
+Route::get('/modalidades', [ModalidadController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Ruta para logout
