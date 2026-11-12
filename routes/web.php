@@ -37,3 +37,11 @@ Route::get('/perfil/empresa', function () {
 Route::get('/perfil/empresa/editar', function () {
     return view('edicion-perfil-empresa');
 });
+
+Route::get('/directorio', function () {
+    return view('directorio-usuarios');
+});
+
+Route::get('/usuarios/{id}/perfil', function ($id) {
+    return view('vista-perfiles');
+});
