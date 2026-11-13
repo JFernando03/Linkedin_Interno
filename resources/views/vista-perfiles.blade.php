@@ -136,7 +136,7 @@
     </div>
 </div>
 
-<script src="{{ asset('/js/perfil-alumno.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('/js/perfil-vista.js') }}?v={{ time() }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
