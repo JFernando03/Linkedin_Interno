@@ -72,15 +72,19 @@ class PerfilController extends Controller
             // 1. Actualizar datos base de la tabla usuarios
             $dataUsuario = $request->only('sobreMi', 'email', 'telefono');
 
-            if ($request->hasFile('avatar')) {
-                if ($usuario->avatar && Storage::disk('public')->exists($usuario->avatar)) {
-                    Storage::disk('public')->delete($usuario->avatar);
-                }
-                $dataUsuario['avatar'] = $request->file('avatar')->store('avatars', 'public');
+                if (array_key_exists('telefono', $dataUsuario) && is_null($dataUsuario['telefono'])) {
+                    $dataUsuario['telefono'] = '';
             }
 
-            $usuario->fill($dataUsuario);
-            $usuario->save();
+                if ($request->hasFile('avatar')) {
+                    if ($usuario->avatar && Storage::disk('public')->exists($usuario->avatar)) {
+                        Storage::disk('public')->delete($usuario->avatar);
+                    }
+                    $dataUsuario['avatar'] = $request->file('avatar')->store('avatars', 'public');
+                }
+
+                $usuario->fill($dataUsuario);
+                $usuario->save();
 
             // 2. Actualizar datos de Alumno si existe
             if ($alumno) {

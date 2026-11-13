@@ -49,6 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const baseData = res.data || res.usuario || res.user || res;
 
+        // Si el usuario autenticado es empresa, redirigir a su vista correspondiente
+        if (baseData.idRol == 2 || baseData.empresa) {
+            window.location.replace('/perfil/empresa');
+            return;
+        }
+
         // --- NOMBRES Y APELLIDOS ---
         const alumno = res.usuario.alumno || {};
 

@@ -57,7 +57,7 @@
                             <!-- Teléfono -->
                             <div class="mb-3">
                                 <label for="telefono" class="form-label fw-bold">Teléfono de Contacto</label>
-                                <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Teléfono">
+                                <input type="text" class="form-control" id="telefono" name="telefono" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" placeholder="10 dígitos (opcional)">
                                 <div class="invalid-feedback" id="error-telefono"></div>
                             </div>
 

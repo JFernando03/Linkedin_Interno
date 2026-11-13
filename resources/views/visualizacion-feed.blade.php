@@ -26,9 +26,10 @@
             <div class="ms-auto d-flex align-items-center gap-3 mt-3 mt-lg-0">
                 <span id="navUserName" class="text-white fw-bold d-none d-lg-inline"></span>
                 
-                <a href="/feed" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Inicio (Feed)</a>
-                <a href="/perfil" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Mi Perfil</a>
-                
+            <a href="/feed" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Inicio (Feed)</a>
+            <a href="/directorio" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Directorio</a>
+            <a href="/perfil" id="navBtnPerfil" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Mi Perfil</a>
+                            
                 <button type="button" onclick="cerrarSesion()" class="btn btn-gold btn-sm fw-bold rounded-pill px-3">Cerrar Sesión</button>
             </div>
         </div>

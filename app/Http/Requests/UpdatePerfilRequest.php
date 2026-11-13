@@ -30,7 +30,7 @@ class UpdatePerfilRequest extends FormRequest
         $rules = [
             'sobreMi'  => 'nullable|string|max:500',
             'email'    => ['sometimes', 'email', Rule::unique('usuarios', 'email')->ignore($userId, 'idUsuario')],
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'nullable|digits:10',
             'avatar'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];
 

@@ -1,3 +1,12 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const usuarioGuardado = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const esEmpresa = usuarioGuardado.idRol == 2 || Boolean(usuarioGuardado.empresa) || Boolean(usuarioGuardado.nombreEmpresa);
+    const btnPerfil = document.getElementById('navBtnPerfil');
+    if (btnPerfil && esEmpresa) {
+        btnPerfil.href = '/perfil/empresa';
+    }
+});
+
 document.addEventListener('DOMContentLoaded', async function () {
     const formCrear = document.getElementById('formCrearPublicacion');
     if (formCrear) {
@@ -439,3 +448,11 @@ async function cerrarSesion() {
             body: formData
     };
 }
+    document.addEventListener('DOMContentLoaded', () => {
+        const usuarioGuardado = JSON.parse(localStorage.getItem('usuario') || '{}');
+        const esEmpresa = usuarioGuardado.idRol == 2 || Boolean(usuarioGuardado.empresa);
+        const btnPerfil = document.getElementById('navBtnPerfil');
+        if (btnPerfil && esEmpresa) {
+            btnPerfil.href = '/perfil/empresa';
+        }
+    });

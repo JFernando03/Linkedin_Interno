@@ -36,9 +36,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error('No se pudo obtener la información del perfil.');
         }
 
-        const res = await response.json();
-        
+const res = await response.json();
         const baseData = res.data || res.usuario || res.user || res;
+
+        // Si el usuario autenticado es alumno, redirigir a su vista correspondiente
+        if (baseData.idRol == 1 || baseData.alumno) {
+            window.location.replace('/perfil');
+            return;
+        }
+
         const empresa = baseData.empresa || res.empresa || baseData;
 
         // --- NOMBRE DE LA EMPRESA ---
@@ -49,7 +55,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (navUser) {
             navUser.textContent = nombreEmpresa;
         }
-        document.getElementById('profileAvatar').textContent = nombreEmpresa ? nombreEmpresa.charAt(0).toUpperCase() : 'E';
+
+        // --- AVATAR / LOGOTIPO ---
+        const avatarEl = document.getElementById('profileAvatar');
+        const avatarPath = baseData.avatar || empresa.avatar;
+
+        if (avatarPath) {
+            const imgUrl = avatarPath.startsWith('http') || avatarPath.startsWith('/storage/') 
+                ? avatarPath 
+                : `/storage/${avatarPath}`;
+
+            avatarEl.innerHTML = `<img src="${imgUrl}" alt="${nombreEmpresa}" class="rounded-circle w-100 h-100" style="object-fit: cover;">`;
+            avatarEl.classList.remove('bg-primary');
+        } else {
+            avatarEl.textContent = nombreEmpresa ? nombreEmpresa.charAt(0).toUpperCase() : 'E';
+        }
 
         // --- INFORMACIÓN GENERAL Y CONTACTO ---
         document.getElementById('profileEmail').textContent = baseData.email || empresa.email || 'No especificado';

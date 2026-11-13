@@ -64,14 +64,8 @@ document.getElementById('formLogin').addEventListener('submit', async function (
             const usuario = data.usuario || data.user || {};
             localStorage.setItem('usuario', JSON.stringify(usuario));
 
-            // --- DETECCIÓN DIRECTA SEGÚN EL SELECTOR VISUAL ---
-            const inputTipo = document.getElementById('inputTipo');
-            const tipoSeleccionado = inputTipo ? inputTipo.value : 'alumno';
-
-            const rutaDestino = (tipoSeleccionado === 'empresa') ? '/perfil/empresa' : '/perfil';
-
-            console.log("Tipo seleccionado en la vista:", tipoSeleccionado);
-            console.log("Redirigiendo a:", rutaDestino);
+            const esEmpresa = usuario.idRol == 2 || Boolean(usuario.empresa);
+            const rutaDestino = esEmpresa ? '/perfil/empresa' : '/perfil';
 
             setTimeout(() => {
                 window.location.href = rutaDestino;
