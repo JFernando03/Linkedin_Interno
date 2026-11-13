@@ -27,7 +27,8 @@
                 <span id="navUserName" class="text-white fw-bold d-none d-lg-inline"></span>
                 <a href="/feed" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Inicio (Feed)</a>
                 <a href="/directorio" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Directorio</a>
-                <a href="/perfil/empresa" id="navBtnPerfil" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Mi Perfil</a>
+                <a href="/chat" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3"><i class="bi bi-chat-dots me-1"></i> Mensajes</a>
+                <a href="/perfil/empresa" id="navBtnPerfil" class="btn btn-light btn-sm fw-bold rounded-pill px-3 text-primary">Mi Perfil</a>
                 <button type="button" id="btnLogout" class="btn btn-gold btn-sm fw-bold rounded-pill px-3">Cerrar Sesión</button>
             </div>
         </div>

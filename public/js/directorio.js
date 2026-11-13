@@ -120,6 +120,9 @@ function renderizarTarjetas(usuarios) {
         return;
     }
 
+    const usuarioActual = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const miId = String(usuarioActual.idUsuario || usuarioActual.id || '');
+
     usuarios.forEach(user => {
         const alumno = user.alumno || {};
         const empresa = user.empresa || {};
@@ -133,6 +136,13 @@ function renderizarTarjetas(usuarios) {
         if (user.alumno || alumno.nombre) rolTexto = 'Alumno';
         if (user.empresa || empresa.nombreEmpresa) rolTexto = 'Empresa';
 
+        const esMiPerfil = String(userId) === miId;
+        const btnMensaje = !esMiPerfil
+            ? `<a href="/chat?destinatario=${userId}" class="btn btn-primary btn-sm rounded-pill">
+                   <i class="bi bi-chat-dots-fill me-1"></i> Mensaje
+               </a>`
+            : '';
+
         const col = document.createElement('div');
         col.className = 'col-md-4 col-sm-6';
         
@@ -143,7 +153,10 @@ function renderizarTarjetas(usuarios) {
                 </div>
                 <h5 class="fw-bold mb-1">${nombre} ${apellido}</h5>
                 <span class="badge bg-secondary mb-3 mx-auto">${rolTexto}</span>
-                <a href="/usuarios/${userId}/perfil" class="btn btn-outline-primary btn-sm mt-auto rounded-pill">Ver Perfil</a>
+                <div class="d-flex justify-content-center gap-2 mt-auto">
+                    <a href="/usuarios/${userId}/perfil" class="btn btn-outline-primary btn-sm rounded-pill">Ver Perfil</a>
+                    ${btnMensaje}
+                </div>
             </div>
         `;
         contenedor.appendChild(col);

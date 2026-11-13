@@ -45,3 +45,8 @@ Route::get('/directorio', function () {
 Route::get('/usuarios/{id}/perfil', function ($id) {
     return view('vista-perfiles');
 });
+
+// Ruta para el módulo de Chat / Mensajes
+Route::get('/chat', function () {
+    return view('chat-usuarios');
+})->name('chat');
