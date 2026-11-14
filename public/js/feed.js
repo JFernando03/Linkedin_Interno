@@ -157,16 +157,17 @@ function crearCardPublicacion(post) {
     const card = document.createElement('div');
     card.className = 'card border-0 shadow-sm mb-3';
 
-    //Obtener ID del usuario en localStorage
+    // Obtener ID del usuario en localStorage
     let userLocalId = null;
     try {
         const localUser = JSON.parse(localStorage.getItem('usuario'));
         if (localUser) userLocalId = localUser.idUsuario || localUser.id;
     } catch(e) {}
 
-    //Extraer datos del Autor
+    // Extraer datos del Autor y su ID de usuario para el enlace al perfil
     let nombreUsuario = 'Usuario';
     const usuarioObj = post.usuario || post.user;
+    let autorId = post.idUsuario || post.id_usuario || (usuarioObj ? (usuarioObj.idUsuario || usuarioObj.id) : null);
 
     if (usuarioObj) {
         if (usuarioObj.alumno) {
@@ -183,11 +184,11 @@ function crearCardPublicacion(post) {
     const fechaOrigen = post.published_at || post.created_at;
     const fecha = fechaOrigen ? new Date(fechaOrigen).toLocaleDateString() : 'Reciente';
 
-    //Verificar si es dueño del post
+    // Verificar si es dueño del post
     const esMio = post.esMia === true || post.esMia === 1 ||
         (post.idUsuario && userLocalId && post.idUsuario == userLocalId);
 
-    //Preparar menú HTML de opciones
+    // Preparar menú HTML de opciones
     let menuHtml = '';
     if (esMio) {
         const idPost = post.idPublicacion || post.id;
@@ -207,7 +208,7 @@ function crearCardPublicacion(post) {
         `;
     }
 
-    //Preparar título e imagen opcionales
+    // Preparar título e imagen opcionales
     const tituloHtml = titulo ? `<h5 class="fw-bold mb-2 text-dark">${titulo}</h5>` : '';
     const multimediaHtml = post.multimedia 
         ? `<div class="mt-3 text-center">
@@ -215,7 +216,13 @@ function crearCardPublicacion(post) {
            </div>` 
         : '';
 
-    //Ensamblar HTML garantizando estructura vertical limpia
+    // Enlace dinámico al perfil del autor (si existe autorId, redirige a su perfil público)
+    let autorHtml = `<h6 class="mb-0 fw-bold text-dark">${nombreUsuario}</h6>`;
+    if (autorId) {
+        autorHtml = `<a href="/usuarios/${autorId}/perfil" class="mb-0 fw-bold text-dark text-decoration-none stretched-link-autor">${nombreUsuario}</a>`;
+    }
+
+    // Ensamblar HTML garantizando estructura vertical limpia
     card.innerHTML = `
         <div class="card-body p-3">
             <!-- Encabezado: Avatar + Nombre + Fecha a la izquierda | Menú a la derecha -->
@@ -225,7 +232,7 @@ function crearCardPublicacion(post) {
                         ${inicial}
                     </div>
                     <div>
-                        <h6 class="mb-0 fw-bold text-dark">${nombreUsuario}</h6>
+                        ${autorHtml}
                         <small class="text-muted">${fecha}</small>
                     </div>
                 </div>
@@ -243,8 +250,18 @@ function crearCardPublicacion(post) {
         </div>
     `;
 
+    // Permitir clic en el nombre con el estilo adecuado de enlace
+    const linkAutor = card.querySelector('a');
+    if (linkAutor) {
+        linkAutor.style.position = 'relative';
+        linkAutor.style.zIndex = '2'; // Evita que los menús o contenedores bloqueen el clic
+        linkAutor.addEventListener('mouseenter', () => linkAutor.classList.add('text-primary'));
+        linkAutor.addEventListener('mouseleave', () => linkAutor.classList.remove('text-primary'));
+    }
+
     return card;
 }
+
 // POST /api/publicaciones (Crear) o PUT /api/publicaciones/{id} (Editar)
 async function crearPublicacion(e) {
     e.preventDefault();
@@ -268,7 +285,6 @@ async function crearPublicacion(e) {
     }
 
     const editId = form ? form.dataset.editId : null;
-    
     const url = editId ? `/api/publicaciones/${editId}` : '/api/publicaciones';
     
     const formData = new FormData();
@@ -276,7 +292,6 @@ async function crearPublicacion(e) {
     formData.append('contenido', contenido);
 
     if (editId) {
-        // Cambio para que laravel reconozca el put en el FormData
         formData.append('_method', 'PUT');
 
         if (checkEliminar && checkEliminar.checked) {
@@ -428,31 +443,3 @@ async function cerrarSesion() {
     sessionStorage.clear();
     window.location.replace('/login');
 }
-
-    // Helper de Fetch para enviar FormData con archivos e imagen
-    function getFetchFormDataOptions(method = 'POST', formData = null) {
-        const token = localStorage.getItem('auth_token');
-
-        const headers = {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        };
-
-        if (token && token !== 'null' && token !== 'undefined') {
-            headers['Authorization'] = 'Bearer ' + token;
-        }
-
-        return {
-            method: method,
-            headers: headers,
-            body: formData
-    };
-}
-    document.addEventListener('DOMContentLoaded', () => {
-        const usuarioGuardado = JSON.parse(localStorage.getItem('usuario') || '{}');
-        const esEmpresa = usuarioGuardado.idRol == 2 || Boolean(usuarioGuardado.empresa);
-        const btnPerfil = document.getElementById('navBtnPerfil');
-        if (btnPerfil && esEmpresa) {
-            btnPerfil.href = '/perfil/empresa';
-        }
-    });

@@ -60,7 +60,6 @@
         <div class="collapse navbar-collapse" id="navbarContent">
             <div class="ms-auto d-flex align-items-center gap-2 gap-lg-3 mt-3 mt-lg-0">
                 <a href="/feed" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Inicio (Feed)</a>
-                <a href="/directorio" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Directorio</a>
                 <a href="/chat" class="btn btn-light btn-sm fw-bold rounded-pill px-3 text-primary">
                     <i class="bi bi-chat-dots-fill me-1"></i> Mensajes
                 </a>

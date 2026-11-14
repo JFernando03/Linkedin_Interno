@@ -12,7 +12,6 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-brand shadow-sm sticky-top py-2">
     <div class="container">
-
         <a class="navbar-brand d-flex align-items-center py-0" href="/feed">
             <div class="bg-white px-2 py-1 rounded-3 shadow-sm d-flex align-items-center" style="height: 42px;">
                 <img src="/images/logofic.webp" alt="LinkedFIC Logo" style="height: 34px; width: auto; object-fit: contain;">
@@ -25,11 +24,9 @@
         <div class="collapse navbar-collapse" id="navbarContent">
             <div class="ms-auto d-flex align-items-center gap-3 mt-3 mt-lg-0">
                 <span id="navUserName" class="text-white fw-bold d-none d-lg-inline"></span>
-                
                 <a href="/feed" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Inicio (Feed)</a>
-                <a href="/directorio" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Directorio</a>
+                <a href="/chat" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3"><i class="bi bi-chat-dots me-1"></i> Mensajes</a>
                 <a href="/perfil" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Mi Perfil</a>
-                
                 <a href="/login" onclick="localStorage.clear(); sessionStorage.clear();" class="btn btn-gold btn-sm fw-bold rounded-pill px-3">Cerrar Sesión</a>
             </div>
         </div>
@@ -55,6 +52,13 @@
             <div id="cardPerfil" class="card shadow-sm d-none">
                 <div class="card-header bg-white py-4 border-0 text-center border-bottom position-relative">
                     
+                    <!-- Botón dinámico de Mensaje con el estilo exacto del directorio -->
+                    <div id="containerBtnMensaje" class="position-absolute top-0 end-0 m-3 d-none">
+                        <a href="#" id="btnEnviarMensaje" class="btn btn-primary btn-sm rounded-pill shadow-sm">
+                            <i class="bi bi-chat-dots-fill me-1"></i> Mensaje
+                        </a>
+                    </div>
+
                     <div class="avatar-circle mx-auto bg-primary text-white d-flex align-items-center justify-content-center rounded-circle fs-2 fw-bold mb-2 shadow-sm" style="width: 80px; height: 80px;" id="profileAvatar">
                         --
                     </div>
