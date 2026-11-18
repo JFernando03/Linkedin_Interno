@@ -11,6 +11,7 @@ class Modalidad extends Model
 
     protected $table = 'modalidades';
     protected $primaryKey = 'idModalidad';
+    public $timestamps = false;
     protected $guarded = [];
 
     // Relacion con las vacantes

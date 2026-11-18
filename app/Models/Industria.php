@@ -9,6 +9,7 @@ class Industria extends Model
     protected $table = 'industrias';
     protected $primaryKey = 'idIndustria';
     public $timestamps = false;
+    protected $guarded = [];
 
     // Relación: Una industria tiene muchas carreras
     public function carreras()

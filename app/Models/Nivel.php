@@ -15,6 +15,7 @@ class Nivel extends Model
     protected $fillable = [
         'nombre',
     ];
+    public $timestamps = false;
 
     // Relación: Un nivel puede tener muchas asignaciones de usuario-habilidad
     public function usuariosHabilidades()
