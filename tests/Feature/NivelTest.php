@@ -13,14 +13,11 @@ class NivelTest extends TestCase
     /** @test */
     public function test_puede_listar_los_niveles_correctamente()
     {
-        // 1. Arrange: Creamos un par de niveles de prueba
         Nivel::create(['nombre' => 'Básico']);
         Nivel::create(['nombre' => 'Avanzado']);
 
-        // 2. Act: Hacemos la petición GET al endpoint de niveles
         $response = $this->getJson('/api/niveles');
 
-        // 3. Assert: Verificamos respuesta y estructura esperada
         $response->assertStatus(200)
                  ->assertJson([
                      'success' => true,

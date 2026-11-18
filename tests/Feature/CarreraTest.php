@@ -14,22 +14,18 @@ class CarreraTest extends TestCase
     /** @test */
     public function test_puede_listar_las_carreras_correctamente()
     {
-        // 1. Arrange: Creamos primero una industria (por la restricción de llave foránea)
         $industria = Industria::create([
             'industria' => 'Tecnología y Software'
         ]);
 
-        // Creamos la carrera asociada a esa industria
         Carrera::create([
             'carrera' => 'Licenciatura en Informática',
             'semestres' => 9,
             'idIndustria' => $industria->idIndustria,
         ]);
 
-        // 2. Act: Hacemos la petición GET al endpoint de carreras
         $response = $this->getJson('/api/carreras');
 
-        // 3. Assert: Verificamos el resultado
         $response->assertStatus(200)
                  ->assertJson([
                      'success' => true,

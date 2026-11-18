@@ -13,15 +13,12 @@ class IndustriaTest extends TestCase
     /** @test */
     public function test_puede_listar_las_industrias_ordenadas_alfabeticamente()
     {
-        // 1. Arrange: Creamos industrias desordenadas para probar el orderBy ascendente
         Industria::create(['industria' => 'Tecnología']);
         Industria::create(['industria' => 'Agricultura']);
         Industria::create(['industria' => 'Manufactura']);
 
-        // 2. Act: Hacemos la petición GET al endpoint de industrias
         $response = $this->getJson('/api/industrias');
 
-        // 3. Assert: Verificamos respuesta, estructura y el orden alfabético esperado
         $response->assertStatus(200)
                  ->assertJson([
                      'success' => true,
