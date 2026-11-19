@@ -47,19 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Ruta para ver el perfil público de cualquier usuario por su ID
     Route::get('/usuarios/{id}/perfil', [PerfilController::class, 'showPublic']);
 
-    // Ruta para listar todos los usuarios en el directorio
-    Route::get('/usuarios', function () {
-        $usuarios = \App\Models\User::with(['rol', 'alumno.carrera', 'empresa.industria'])->get();
-        return response()->json([
-            'success' => true,
-            'usuarios' => $usuarios,
-        ], 200);
-    });
-
     //Ruta para agregar una habilidad al alumno
-    Route::post('alumnos/habilidades',[PerfilController::class, 'storeHabilidad']);
+    Route::post('alumnos/habilidades',[HabilidadController::class, 'store']);
     //Ruta para eliminar una habilidad al alumno
-    Route::delete('alumnos/habilidades/{idAlumnoHabilidad}',[PerfilController::class, 'destroyHabilidad']);
+    Route::delete('alumnos/habilidades/{idAlumnoHabilidad}',[HabilidadController::class, 'destroy']);
 
     // Ruta para ver/descargar el currículum
     Route::get('/alumnos/curriculum', [AlumnoController::class, 'verCurriculum']);

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreHabilidadRequest;
 use App\Http\Requests\UpdatePerfilRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,7 +11,8 @@ use Illuminate\Support\Facades\Storage;
 
 class PerfilController extends Controller
 {
-    public function show(Request $request){
+    public function show(Request $request)
+    {
         $usuario = $request->user();
 
         // Arreglo base de relaciones, tiene info del rol del usuario
@@ -35,10 +35,11 @@ class PerfilController extends Controller
             'success' => true,
             'message' => 'Perfil obtenido correctamente',
             'usuario' => $usuario,
-        ],200);
+        ], 200);
     }
 
-    public function showPublic($id){
+    public function showPublic($id)
+    {
         // Buscamos al usuario o lanzamos un error 404 si no existe
         $usuario = User::with('rol')->findOrFail($id);
 
@@ -48,8 +49,7 @@ class PerfilController extends Controller
         if ($usuario->alumno) {
             $relaciones[] = 'alumno.carrera';
             $relaciones[] = 'alumno.habilidades';
-        }
-        elseif ($usuario->empresa) {
+        } elseif ($usuario->empresa) {
             $relaciones[] = 'empresa.industria';
         }
 
@@ -72,19 +72,19 @@ class PerfilController extends Controller
             // 1. Actualizar datos base de la tabla usuarios
             $dataUsuario = $request->only('sobreMi', 'email', 'telefono');
 
-                if (array_key_exists('telefono', $dataUsuario) && is_null($dataUsuario['telefono'])) {
-                    $dataUsuario['telefono'] = '';
+            if (array_key_exists('telefono', $dataUsuario) && is_null($dataUsuario['telefono'])) {
+                $dataUsuario['telefono'] = '';
             }
 
-                if ($request->hasFile('avatar')) {
-                    if ($usuario->avatar && Storage::disk('public')->exists($usuario->avatar)) {
-                        Storage::disk('public')->delete($usuario->avatar);
-                    }
-                    $dataUsuario['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            if ($request->hasFile('avatar')) {
+                if ($usuario->avatar && Storage::disk('public')->exists($usuario->avatar)) {
+                    Storage::disk('public')->delete($usuario->avatar);
                 }
+                $dataUsuario['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            }
 
-                $usuario->fill($dataUsuario);
-                $usuario->save();
+            $usuario->fill($dataUsuario);
+            $usuario->save();
 
             // 2. Actualizar datos de Alumno si existe
             if ($alumno) {
@@ -123,62 +123,6 @@ class PerfilController extends Controller
             'success' => true,
             'message' => 'Perfil actualizado exitosamente',
             'usuario' => $usuario,
-        ], 200);
-    }
-
-    public function storeHabilidad(StoreHabilidadRequest $request){
-        $usuario = $request->user();
-        $alumno = $usuario->alumno;
-
-        if (!$alumno) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El usuario autenticado no cuenta con un perfil de alumno',
-            ], 400);
-        }
-
-        $alumno->habilidades()->attach($request->idHabilidad, [
-            'idNivel' => $request->idNivel
-        ]);
-
-        $usuario->load(['alumno.carrera', 'alumno.habilidades']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Habilidad agregada exitosamente al perfil.',
-            'usuario' => $usuario
-        ], 201);
-    }
-
-    public function destroyHabilidad(Request $request, $idAlumnoHabilidad)
-    {
-        $usuario = $request->user();
-        $alumno = $usuario->alumno;
-
-        if (!$alumno) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Perfil de alumno no encontrado.',
-            ], 404);
-        }
-
-        $eliminado = $alumno->habilidades()
-                             ->wherePivot('id_alumno_habilidad', $idAlumnoHabilidad)
-                             ->detach();
-
-        if (!$eliminado) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No se encontró la habilidad en tu perfil.',
-            ], 404);
-        }
-
-        $usuario->load(['alumno.carrera', 'alumno.habilidades']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Habilidad eliminada del perfil correctamente.',
-            'usuario' => $usuario
         ], 200);
     }
 }
