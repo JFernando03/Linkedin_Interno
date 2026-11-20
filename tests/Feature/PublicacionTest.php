@@ -241,7 +241,6 @@ class PublicacionTest extends TestCase
 
         $publicacion = $this->crearPublicacion($dueno);
 
-        // Otro usuario intenta borrarla: en tu destroy actual filtra por idUsuario y devuelve 404
         $this->actingAs($otroUsuario, 'sanctum')
             ->deleteJson("/api/publicaciones/{$publicacion->idPublicacion}")
             ->assertStatus(404)
@@ -250,7 +249,6 @@ class PublicacionTest extends TestCase
                 'message' => 'Publicacion no encontrado',
             ]);
 
-        // ID inexistente
         $this->actingAs($dueno, 'sanctum')
             ->deleteJson('/api/publicaciones/999999')
             ->assertStatus(404);

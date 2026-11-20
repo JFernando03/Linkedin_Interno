@@ -16,7 +16,6 @@ class FeedController extends Controller
         $perPage = 10;
         $page = $request->input('page', 1);
 
-        // Consulta base usando DB::table para unirlas
         $publicacionesQuery = DB::table('publicaciones')
             ->select(
                 'idPublicacion as id',
@@ -33,16 +32,13 @@ class FeedController extends Controller
                 DB::raw("'vacante' as tipo")
             );
 
-        // Unir ambas consultas
         $unionQuery = $publicacionesQuery->unionAll($vacantesQuery);
 
-        // Envolver en una subquery para ordenar y paginar correctamente en SQL
         $paginatedItems = DB::query()
             ->fromSub($unionQuery, 'feed')
             ->orderBy('published_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        // 2. Hidratar los datos reales de Eloquent con sus relaciones correspondientes
         $itemsTransformados = collect($paginatedItems->items())->map(function ($item) use ($usuarioId) {
             if ($item->tipo === 'publicacion') {
                 $objeto = Publicacion::with(['usuario.alumno', 'usuario.empresa'])->find($item->id);
@@ -61,7 +57,6 @@ class FeedController extends Controller
             }
         })->filter();
 
-        // Reconstruir la estructura de paginación de Laravel manteniendo los metadatos
         $resultadoPaginado = new \Illuminate\Pagination\LengthAwarePaginator(
             $itemsTransformados,
             $paginatedItems->total(),
