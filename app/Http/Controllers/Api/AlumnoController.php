@@ -61,7 +61,7 @@ class AlumnoController extends Controller
                     'apellidoPaterno' => $data['apellidoPaterno'],
                     'apellidoMaterno' => $data['apellidoMaterno'],
                     'idCarrera' => $data['idCarrera'],
-                    'curriculum' => $pathCurriculum ?? '',
+                    'curriculum' => $curriculumPath ?? '',
                     'semestre' => $data['semestre'] ?? 1,
                 ]);
 
