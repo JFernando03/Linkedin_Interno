@@ -25,6 +25,7 @@
             <div class="ms-auto d-flex align-items-center gap-3 mt-3 mt-lg-0">
                 <span id="navUserName" class="text-white fw-bold d-none d-lg-inline"></span>
                 <a href="/feed" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Inicio (Feed)</a>
+                <a href="/vacantes" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3"><i class="bi bi-briefcase me-1"></i> Vacantes</a>
                 <a href="/chat" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3"><i class="bi bi-chat-dots me-1"></i> Mensajes</a>
                 <a href="/perfil" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">Mi Perfil</a>
                 <a href="/login" onclick="localStorage.clear(); sessionStorage.clear();" class="btn btn-gold btn-sm fw-bold rounded-pill px-3">Cerrar Sesión</a>
@@ -51,8 +52,8 @@
             <!-- Tarjeta con la información del perfil -->
             <div id="cardPerfil" class="card shadow-sm d-none">
                 <div class="card-header bg-white py-4 border-0 text-center border-bottom position-relative">
-                    
-                    <!-- Botón dinámico de Mensaje con el estilo exacto del directorio -->
+
+                    <!-- Botón dinámico de Mensaje (Solo al ver el perfil de otro usuario) -->
                     <div id="containerBtnMensaje" class="position-absolute top-0 end-0 m-3 d-none">
                         <a href="#" id="btnEnviarMensaje" class="btn btn-primary btn-sm rounded-pill shadow-sm">
                             <i class="bi bi-chat-dots-fill me-1"></i> Mensaje
@@ -67,18 +68,18 @@
                 </div>
 
                 <div class="card-body p-4">
-                    <!-- Sección Información Académica -->
-                    <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3">
+                    <!-- Sección Información Académica / Corporativa -->
+                    <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3" id="tituloSeccionPrincipal">
                         <i class="bi bi-mortarboard-fill me-1"></i> Información Académica
                     </h5>
 
                     <div class="row mb-3">
-                        <div class="col-sm-4 text-muted">Carrera / Programa</div>
+                        <div class="col-sm-4 text-muted" id="labelCampo1">Carrera / Programa</div>
                         <div class="col-sm-8 fw-semibold" id="profileCarrera">--</div>
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-sm-4 text-muted">Semestre / Año</div>
+                        <div class="col-sm-4 text-muted" id="labelCampo2">Semestre / Año</div>
                         <div class="col-sm-8 fw-semibold" id="profileSemestre">--</div>
                     </div>
 
@@ -100,37 +101,41 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-sm-4 text-muted">Sobre Mí</div>
+                        <div class="col-sm-4 text-muted" id="labelSobreMi">Sobre Mí</div>
                         <div class="col-sm-8" id="profileSobreMi">--</div>
                     </div>
 
-                    <hr class="my-4">
+                    <!-- SECCIÓN HABILIDADES TECNOLÓGICAS (Solo para alumnos) -->
+                    <div id="seccionHabilidades">
+                        <hr class="my-4">
 
-                    <!-- SECCIÓN HABILIDADES TECNOLÓGICAS -->
-                    <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3">
-                        <i class="bi bi-code-slash me-1"></i> Habilidades Tecnológicas
-                    </h5>
+                        <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3">
+                            <i class="bi bi-code-slash me-1"></i> Habilidades Tecnológicas
+                        </h5>
 
-                    <div class="row mb-3">
-                        <div class="col-sm-4 text-muted">Mis Habilidades</div>
-                        <div class="col-sm-8">
-                            <div id="profileHabilidades" class="d-flex flex-wrap gap-1">
-                                <span class="text-muted">Cargando habilidades...</span>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 text-muted">Mis Habilidades</div>
+                            <div class="col-sm-8">
+                                <div id="profileHabilidades" class="d-flex flex-wrap gap-1">
+                                    <span class="text-muted">Cargando habilidades...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <hr class="my-4">
+                    <!-- SECCIÓN DOCUMENTACIÓN (Solo para alumnos) -->
+                    <div id="seccionDocumentacion">
+                        <hr class="my-4">
 
-                    <!-- Sección Documentación -->
-                    <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3">
-                        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Documentación
-                    </h5>
+                        <h5 class="card-title fs-6 text-uppercase text-primary fw-bold mb-3">
+                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> Documentación
+                        </h5>
 
-                    <div class="row align-items-center">
-                        <div class="col-sm-4 text-muted">Currículum Vitae</div>
-                        <div class="col-sm-8" id="profileCurriculumContainer">
-                            <span class="text-muted">Sin documento adjunto</span>
+                        <div class="row align-items-center">
+                            <div class="col-sm-4 text-muted">Currículum Vitae</div>
+                            <div class="col-sm-8" id="profileCurriculumContainer">
+                                <span class="text-muted">Sin documento adjunto</span>
+                            </div>
                         </div>
                     </div>
                 </div>

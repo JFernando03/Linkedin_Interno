@@ -6,6 +6,50 @@ function getToken() {
            sessionStorage.getItem('token');
 }
 
+// Helper para verificar si un objeto o arreglo tiene datos reales desde la BD
+function tieneDatos(obj) {
+    if (!obj) return false;
+    if (Array.isArray(obj)) return obj.length > 0;
+    if (typeof obj === 'object') return Object.keys(obj).length > 0;
+    return Boolean(obj);
+}
+
+// Helper para resolver la URL de la imagen desde BD o storage
+function resolverUrlAvatar(rawPath) {
+    if (!rawPath || typeof rawPath !== 'string') return '';
+    const limpio = rawPath.trim();
+    if (!limpio) return '';
+    if (/^https?:\/\//i.test(limpio) || limpio.startsWith('/')) {
+        return limpio;
+    }
+    return `/storage/${limpio}`;
+}
+
+// Helper para renderizar el avatar con fallback automático a la inicial
+function renderizarAvatarPerfil(avatarEl, rawPath, textoFallback, altTexto) {
+    if (!avatarEl) return;
+
+    const mostrarInicial = () => {
+        avatarEl.innerHTML = '';
+        avatarEl.classList.add('bg-primary', 'text-white');
+        avatarEl.textContent = (textoFallback || 'U').trim().charAt(0).toUpperCase() || 'U';
+    };
+
+    const url = resolverUrlAvatar(rawPath);
+    if (!url) {
+        mostrarInicial();
+        return;
+    }
+
+    avatarEl.classList.remove('bg-primary');
+    avatarEl.innerHTML = `<img src="${url}" alt="${altTexto || 'Avatar'}" class="rounded-circle w-100 h-100" style="object-fit: cover;">`;
+
+    const img = avatarEl.querySelector('img');
+    if (img) {
+        img.addEventListener('error', mostrarInicial);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const token = getToken();
     const alertBox = document.getElementById('alertBox');
@@ -17,17 +61,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // 1. Detectar automáticamente si estamos viendo un perfil ajeno desde el directorio o feed (ej: /usuarios/5/perfil)
-    const pathSegments = window.location.pathname.split('/');
+    // 1. Detectar ID de la URL si se visita un perfil ajeno (ej: /usuarios/5/perfil)
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
     const perfilIndex = pathSegments.indexOf('perfil');
-    let userId = null;
+    let userIdUrl = null;
 
     if (perfilIndex > 0) {
-        userId = pathSegments[perfilIndex - 1];
+        userIdUrl = pathSegments[perfilIndex - 1];
     }
 
-    // 2. Definir el endpoint dinámico: si hay ID en la URL usa la ruta pública, si no, usa el perfil propio
-    const endpoint = userId && !isNaN(userId) ? `/api/usuarios/${userId}/perfil` : '/api/perfil';
+    // 2. Endpoint dinámico respaldado por la consulta a la BD en Laravel
+    const endpoint = userIdUrl && !isNaN(userIdUrl)
+        ? `/api/usuarios/${userIdUrl}/perfil`
+        : '/api/perfil';
 
     try {
         const response = await fetch(endpoint, {
@@ -50,75 +96,192 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const res = await response.json();
-        
-        // Extraer los datos reales devueltos por la API de Laravel
+
+        // Extraer registro principal y relaciones devueltas por Laravel
         const baseData = res.usuario || res.data || res;
-        const alumno = baseData.alumno || {};
-        const empresa = baseData.empresa || {};
+        const alumno = tieneDatos(baseData.alumno)
+            ? baseData.alumno
+            : (tieneDatos(res.alumno) ? res.alumno : {});
+        const empresa = tieneDatos(baseData.empresa)
+            ? baseData.empresa
+            : (tieneDatos(res.empresa) ? res.empresa : {});
 
-        // 3. Determinar si el perfil es de una empresa o de un alumno
-        const esEmpresa = baseData.idRol == 2 || baseData.id_rol == 2 || Boolean(baseData.empresa) || Object.keys(empresa).length > 0;
+        // ID real obtenido directamente del registro de la BD (con respaldo al parámetro de URL)
+        const idPerfilBD =
+            baseData.idUsuario ??
+            baseData.id_usuario ??
+            baseData.id ??
+            empresa.idUsuario ??
+            empresa.id_usuario ??
+            alumno.idUsuario ??
+            alumno.id_usuario ??
+            userIdUrl ??
+            '';
 
-        // Si el usuario autenticado es empresa y está en su propio perfil raíz, redirigir a su vista
-        if (!userId && esEmpresa) {
+        // Rol obtenido directamente de la relación/campos del usuario en la BD
+        const rolDesdeBD =
+            baseData.rol?.nombre ||
+            baseData.rol?.nombreRol ||
+            baseData.rol?.descripcion ||
+            baseData.nombreRol ||
+            baseData.nombre_rol ||
+            baseData.tipo ||
+            baseData.tipo_usuario ||
+            '';
+
+        const rolNormalizado = String(rolDesdeBD).toLowerCase().trim();
+
+        const tieneCamposEmpresa = Boolean(
+            empresa.nombreEmpresa ||
+            empresa.nombre_empresa ||
+            empresa.razonSocial ||
+            empresa.razon_social ||
+            empresa.rfc ||
+            empresa.paginaWeb ||
+            empresa.sitioWeb ||
+            baseData.nombreEmpresa ||
+            baseData.nombre_empresa
+        );
+
+        const tieneDatosAlumno = Boolean(
+            alumno.nombre ||
+            alumno.apellidoPaterno ||
+            alumno.matricula ||
+            alumno.carrera ||
+            alumno.semestre
+        );
+
+        // Determinar si es empresa según relación/rol/campos desde BD
+        const esEmpresa =
+            rolNormalizado.includes('empresa') ||
+            tieneDatos(empresa) ||
+            tieneCamposEmpresa ||
+            (!tieneDatosAlumno && Boolean(baseData.empresa));
+
+        // Si el usuario autenticado es empresa y entra a /perfil sin ID, redirigir a su vista de empresa
+        if (!userIdUrl && esEmpresa) {
             window.location.replace('/perfil/empresa');
             return;
         }
 
-        // --- NOMBRES Y DATOS GENERALES ---
+        // --- NOMBRES Y ROL DESDE LA BD ---
         let nombre = '';
         let paterno = '';
         let materno = '';
-        let rolTexto = '';
 
         if (esEmpresa) {
-            nombre = empresa.nombreEmpresa || empresa.nombre || baseData.nombre || 'Empresa';
-            rolTexto = 'Empresa';
+            nombre =
+                empresa.nombreEmpresa ||
+                empresa.nombre_empresa ||
+                empresa.razonSocial ||
+                empresa.razon_social ||
+                empresa.nombre ||
+                baseData.nombreEmpresa ||
+                baseData.nombre_empresa ||
+                baseData.nombre ||
+                '';
         } else {
-            nombre = alumno.nombre || baseData.nombre || 'Alumno';
-            paterno = alumno.apellidoPaterno || baseData.apellidoPaterno || '';
-            materno = alumno.apellidoMaterno || baseData.apellidoMaterno || '';
-            rolTexto = baseData.rol?.nombre || 'Alumno';
+            nombre = alumno.nombre || baseData.nombre || '';
+            paterno = alumno.apellidoPaterno || alumno.apellido_paterno || baseData.apellidoPaterno || '';
+            materno = alumno.apellidoMaterno || alumno.apellido_materno || baseData.apellidoMaterno || '';
         }
 
-        const nombreCompleto = `${nombre} ${paterno} ${materno}`.trim();
-        const nombreNav = `${nombre} ${paterno}`.trim();
+        const rolTexto = rolDesdeBD || (esEmpresa ? 'Empresa' : 'Alumno');
+        const nombreCompleto = esEmpresa
+            ? nombre.trim()
+            : `${nombre} ${paterno} ${materno}`.trim();
+        const nombreNav = esEmpresa
+            ? nombre.trim()
+            : `${nombre} ${paterno}`.trim();
 
-        document.getElementById('profileNombreCompleto').textContent = nombreCompleto || 'Miembro FIC';
+        document.getElementById('profileNombreCompleto').textContent = nombreCompleto || 'Sin nombre registrado';
         const navUser = document.getElementById('navUserName');
-        if (navUser) {
-            navUser.textContent = nombreNav || 'Usuario';
+        if (navUser && nombreNav) {
+            navUser.textContent = nombreNav;
         }
-        document.getElementById('profileAvatar').textContent = nombre ? nombre.charAt(0).toUpperCase() : 'U';
 
-        // --- INFORMACIÓN GENERAL Y CONTACTO (Directo de la BD) ---
-        document.getElementById('profileEmail').textContent = baseData.email || baseData.correo || alumno.correo || empresa.correo || 'No especificado';
-        document.getElementById('profileTelefono').textContent = alumno.telefono || empresa.telefono || baseData.telefono || 'No especificado';
-        document.getElementById('profileSobreMi').textContent = alumno.sobreMi || alumno.sobre_mi || empresa.descripcion || baseData.sobreMi || 'Sin información disponible.';
+        // --- AVATAR / FOTO DE PERFIL DESDE LA BD ---
+        const avatarPath = esEmpresa
+            ? (empresa.avatar || empresa.logo || baseData.avatar)
+            : (alumno.avatar || alumno.foto || alumno.foto_perfil || baseData.avatar || res.avatar);
 
-        // --- ROL ---
+        renderizarAvatarPerfil(
+            document.getElementById('profileAvatar'),
+            avatarPath,
+            nombre || rolTexto || 'U',
+            nombreCompleto || 'Perfil de usuario'
+        );
+
+        // --- INFORMACIÓN GENERAL Y CONTACTO DESDE LA BD ---
+        document.getElementById('profileEmail').textContent =
+            baseData.email || baseData.correo || alumno.correo || empresa.correo || empresa.email || 'No especificado';
+
+        document.getElementById('profileTelefono').textContent =
+            empresa.telefono || alumno.telefono || baseData.telefono || 'No especificado';
+
+        document.getElementById('profileSobreMi').textContent = esEmpresa
+            ? (empresa.descripcion || empresa.sobreMi || empresa.sobre_mi || baseData.descripcion || 'Sin información disponible.')
+            : (alumno.sobreMi || alumno.sobre_mi || baseData.sobreMi || baseData.sobre_mi || 'Sin información disponible.');
+
+        // --- ETIQUETA DE ROL ---
         const badgeRol = document.getElementById('profileRol');
         if (badgeRol) {
             badgeRol.textContent = rolTexto;
+            badgeRol.className = 'badge bg-secondary mt-2 fs-6';
         }
 
-        // --- INFORMACIÓN ACADÉMICA O EMPRESARIAL SEGÚN CORRESPONDA ---
+        // --- SECCIONES EXCLUSIVAS DE ALUMNO VS EMPRESA ---
+        const seccionHabilidades = document.getElementById('seccionHabilidades');
+        const seccionDocumentacion = document.getElementById('seccionDocumentacion');
+        const tituloSeccionPrincipal = document.getElementById('tituloSeccionPrincipal');
+        const labelCampo1 = document.getElementById('labelCampo1');
+        const labelCampo2 = document.getElementById('labelCampo2');
+        const labelSobreMi = document.getElementById('labelSobreMi');
         const carreraEl = document.getElementById('profileCarrera');
         const semestreEl = document.getElementById('profileSemestre');
 
         if (esEmpresa) {
+            if (seccionHabilidades) seccionHabilidades.classList.add('d-none');
+            if (seccionDocumentacion) seccionDocumentacion.classList.add('d-none');
+
+            if (tituloSeccionPrincipal) {
+                tituloSeccionPrincipal.innerHTML = '<i class="bi bi-building me-1"></i> Información Corporativa';
+            }
+            if (labelCampo1) labelCampo1.textContent = 'Industria / Sector';
+            if (labelCampo2) labelCampo2.textContent = 'Página Web';
+            if (labelSobreMi) labelSobreMi.innerHTML = 'Sobre Mí /<br>Descripción';
+
             if (carreraEl) {
-                let nombreIndustria = 'Sector Empresarial';
-                if (empresa.industria) {
-                    nombreIndustria = typeof empresa.industria === 'object' ? (empresa.industria.nombre || empresa.industria.descripcion) : empresa.industria;
+                let nombreIndustria = 'No especificada';
+                const industriaData = empresa.industria || empresa.sector || baseData.industria;
+                if (industriaData) {
+                    nombreIndustria = typeof industriaData === 'object'
+                        ? (industriaData.nombre || industriaData.industria || industriaData.descripcion || 'No especificada')
+                        : industriaData;
                 }
                 carreraEl.textContent = nombreIndustria;
             }
+
             if (semestreEl) {
-                const web = empresa.paginaWeb || empresa.web || 'No especificada';
-                semestreEl.innerHTML = web !== 'No especificada' ? `<a href="${web}" target="_blank">${web}</a>` : web;
+                const web = empresa.paginaWeb || empresa.pagina_web || empresa.sitioWeb || empresa.sitio_web || empresa.web || '';
+                if (web) {
+                    const urlSegura = /^https?:\/\//i.test(web) ? web : `https://${web}`;
+                    semestreEl.innerHTML = `<a href="${urlSegura}" target="_blank" rel="noopener noreferrer">${web}</a>`;
+                } else {
+                    semestreEl.textContent = 'No especificada';
+                }
             }
         } else {
+            if (seccionHabilidades) seccionHabilidades.classList.remove('d-none');
+            if (seccionDocumentacion) seccionDocumentacion.classList.remove('d-none');
+
+            if (tituloSeccionPrincipal) {
+                tituloSeccionPrincipal.innerHTML = '<i class="bi bi-mortarboard-fill me-1"></i> Información Académica';
+            }
+            if (labelCampo1) labelCampo1.textContent = 'Carrera / Programa';
+            if (labelCampo2) labelCampo2.textContent = 'Semestre / Año';
+            if (labelSobreMi) labelSobreMi.textContent = 'Sobre Mí';
+
             let nombreCarrera = 'No especificada';
             if (alumno.carrera) {
                 if (typeof alumno.carrera === 'object') {
@@ -129,76 +292,71 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             if (carreraEl) carreraEl.textContent = nombreCarrera;
             if (semestreEl) semestreEl.textContent = alumno.semestre ? `${alumno.semestre}° Semestre` : 'No especificado';
-        }
 
-        // --- HABILIDADES TECNOLÓGICAS (Solo para alumnos, se limpia si es empresa) ---
-        const containerHabilidades = document.getElementById('profileHabilidades');
-        if (containerHabilidades) {
-            if (esEmpresa) {
-                containerHabilidades.innerHTML = '<span class="text-muted">No aplica para cuentas de empresa</span>';
-            } else {
-                renderizarHabilidadesPerfil(alumno.habilidades || baseData.habilidades || alumno.alumno_habilidades);
-            }
-        }
+            // Habilidades
+            renderizarHabilidadesPerfil(alumno.habilidades || baseData.habilidades || alumno.alumno_habilidades);
 
-        // --- CURRÍCULUM (Solo para alumnos) ---
-        const curriculumPath = alumno.curriculum || 
-                               baseData.curriculum || 
-                               alumno.curriculum_vitae || 
-                               alumno.ruta_cv;
+            // Currículum
+            const curriculumPath = alumno.curriculum || 
+                                   baseData.curriculum || 
+                                   alumno.curriculum_vitae || 
+                                   alumno.ruta_cv;
 
-        const curriculumContainer = document.getElementById('profileCurriculumContainer');
-        if (curriculumContainer) {
-            if (!esEmpresa && curriculumPath) {
-                curriculumContainer.innerHTML = `
-                    <button id="btnVerCv" class="btn btn-outline-primary btn-sm fw-semibold">
-                        <i class="bi bi-file-earmark-pdf"></i> Ver / Descargar CV
-                    </button>
-                `;
+            const curriculumContainer = document.getElementById('profileCurriculumContainer');
+            if (curriculumContainer) {
+                if (curriculumPath) {
+                    curriculumContainer.innerHTML = `
+                        <button id="btnVerCv" class="btn btn-outline-primary btn-sm fw-semibold">
+                            <i class="bi bi-file-earmark-pdf"></i> Ver / Descargar CV
+                        </button>
+                    `;
 
-                document.getElementById('btnVerCv').addEventListener('click', async () => {
-                    try {
-                        const resPdf = await fetch(userId ? `/api/usuarios/${userId}/curriculum` : '/api/alumnos/curriculum', {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Bearer ${token}`
+                    document.getElementById('btnVerCv').addEventListener('click', async () => {
+                        try {
+                            const resPdf = await fetch(
+                                idPerfilBD ? `/api/usuarios/${idPerfilBD}/curriculum` : '/api/alumnos/curriculum',
+                                {
+                                    method: 'GET',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`
+                                    }
+                                }
+                            );
+
+                            if (!resPdf.ok) {
+                                throw new Error('No se pudo cargar el archivo PDF.');
                             }
-                        });
 
-                        if (!resPdf.ok) {
-                            throw new Error('No se pudo cargar el archivo PDF.');
+                            const blob = await resPdf.blob();
+                            const blobUrl = window.URL.createObjectURL(blob);
+                            window.open(blobUrl, '_blank');
+
+                        } catch (err) {
+                            alert(err.message || 'No hay acceso al documento de este usuario.');
                         }
-
-                        const blob = await resPdf.blob();
-                        const blobUrl = window.URL.createObjectURL(blob);
-                        window.open(blobUrl, '_blank');
-
-                    } catch (err) {
-                        alert(err.message || 'No hay acceso al documento de este usuario.');
-                    }
-                });
-            } else {
-                curriculumContainer.innerHTML = `
-                    <span class="text-muted"><i class="bi bi-exclamation-circle"></i> ${esEmpresa ? 'No aplica para cuentas de empresa' : 'Sin documento adjunto'}</span>
-                `;
+                    });
+                } else {
+                    curriculumContainer.innerHTML = `
+                        <span class="text-muted"><i class="bi bi-exclamation-circle"></i> Sin documento adjunto</span>
+                    `;
+                }
             }
         }
 
-        // --- GESTIÓN DEL BOTÓN DE MENSAJE DIRECTO ---
+        // --- BOTÓN DE MENSAJE DIRECTO USANDO EL ID OBTENIDO DE LA BD ---
         const containerBtnMensaje = document.getElementById('containerBtnMensaje');
         const btnEnviarMensaje = document.getElementById('btnEnviarMensaje');
 
         let miId = null;
         try {
             const localUser = JSON.parse(localStorage.getItem('usuario') || '{}');
-            miId = String(localUser.idUsuario || localUser.id || '');
-        } catch(e) {}
+            miId = String(localUser.idUsuario || localUser.id_usuario || localUser.id || '');
+        } catch (e) {}
 
-        const esMiPropioPerfil = !userId || String(userId) === miId;
+        const esPerfilAjeno = Boolean(idPerfilBD) && String(idPerfilBD) !== miId;
 
-        if (!esMiPropioPerfil && containerBtnMensaje && btnEnviarMensaje) {
-            // El ID del usuario actual de la página se pasa como parámetro al chat
-            btnEnviarMensaje.href = `/chat?destinatario=${userId}`;
+        if (esPerfilAjeno && containerBtnMensaje && btnEnviarMensaje) {
+            btnEnviarMensaje.href = `/chat?destinatario=${encodeURIComponent(idPerfilBD)}`;
             containerBtnMensaje.classList.remove('d-none');
         } else if (containerBtnMensaje) {
             containerBtnMensaje.classList.add('d-none');

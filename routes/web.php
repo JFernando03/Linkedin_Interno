@@ -48,3 +48,7 @@ Route::get('/usuarios/{id}/perfil', function ($id) {
 Route::get('/chat', function () {
     return view('chat-usuarios');
 })->name('chat');
+
+Route::get('/vacantes', function () {
+    return view('vacantes');
+})->name('vacantes');
