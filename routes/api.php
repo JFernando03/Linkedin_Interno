@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BuscadorController;
 use App\Http\Controllers\Api\CarreraController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\EmpresaController;
@@ -87,4 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/alumnos/{id}/interes', [InteresController::class, 'store']);
     // Ruta para ver las notificaciones
     Route::get('/notificaciones', [InteresController::class, 'misNotificaciones']);
+
+    // Ruta para buscar usuarios (HU-26)
+    Route::get('/usuarios/buscar', [BuscadorController::class, 'buscar']);
 });
