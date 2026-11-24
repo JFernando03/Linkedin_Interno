@@ -91,4 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Ruta para buscar usuarios (HU-26)
     Route::get('/usuarios/buscar', [BuscadorController::class, 'buscar']);
+
+    // Ruta para ver a todos los alumnos (Sin empresas y administradores)
+    Route::get('/alumnos', [AlumnoController::class, 'index']);
 });

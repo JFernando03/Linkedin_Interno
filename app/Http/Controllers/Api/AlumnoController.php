@@ -16,9 +16,26 @@ class AlumnoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $user = $request->user();
+
+        if (!in_array((int) $user->idRol, [2, 3], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autorizado.',
+            ], 403);
+        }
+
+        $alumnos = User::query()
+            ->join('alumnos', 'usuarios.idUsuario', '=', 'alumnos.idUsuario')
+            ->select('usuarios.*', 'alumnos.*')
+            ->get();
+
+        return response()->json([
+            'success'    => true,
+            'candidatos' => $alumnos,
+        ], 200);
     }
 
     /**
