@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\IndexAlumnoRequest;
 use App\Http\Requests\StoreAlumnoRequest;
 use App\Models\Alumno;
 use App\Models\User;
@@ -16,26 +17,68 @@ class AlumnoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexAlumnoRequest $request)
     {
-        $user = $request->user();
+        $validated = $request->validated();
 
-        if (!in_array((int) $user->idRol, [2, 3], true)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No autorizado.',
-            ], 403);
+        $query = User::query()
+            ->join('alumnos', 'usuarios.idUsuario', '=', 'alumnos.idUsuario')
+            ->select('usuarios.*', 'alumnos.*');
+
+        if (!empty($validated['idCarrera'])) {
+            $query->where('alumnos.idCarrera', (int) $validated['idCarrera']);
         }
 
-        $alumnos = User::query()
-            ->join('alumnos', 'usuarios.idUsuario', '=', 'alumnos.idUsuario')
-            ->select('usuarios.*', 'alumnos.*')
-            ->get();
+        if (!empty($validated['semestre'])) {
+            $query->where('alumnos.semestre', (int) $validated['semestre']);
+        }
+
+        if (array_key_exists('tiene_curriculum', $validated) && $validated['tiene_curriculum'] !== null) {
+            if ($request->boolean('tiene_curriculum')) {
+                $query->whereNotNull('alumnos.curriculum')
+                    ->where('alumnos.curriculum', '!=', '');
+            } else {
+                $query->where(function ($sub) {
+                    $sub->whereNull('alumnos.curriculum')
+                        ->orWhere('alumnos.curriculum', '');
+                });
+            }
+        }
+
+        if (!empty($validated['habilidades'])) {
+            $habilidades = array_filter(array_map('trim', explode(',', $validated['habilidades'])));
+
+            foreach ($habilidades as $skill) {
+                $likeSkill = '%' . addcslashes($skill, '%_\\') . '%';
+                $query->whereHas('alumno.habilidades', function ($qSkill) use ($likeSkill) {
+                    $qSkill->where('nombre', 'ilike', $likeSkill);
+                });
+            }
+        }
+
+        $alumnos = $query->get();
 
         return response()->json([
             'success'    => true,
             'candidatos' => $alumnos,
         ], 200);
+    }
+
+    private function normalizarLista(mixed $valor): array
+    {
+        if (is_array($valor)) {
+            $items = $valor;
+        } elseif (is_string($valor)) {
+            $items = explode(',', $valor);
+        } else {
+            return [];
+        }
+
+        return collect($items)
+            ->map(fn ($item) => trim((string) $item))
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /**
