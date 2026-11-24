@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\IndexVacanteRequest;
 use App\Http\Requests\StoreVacanteRequest;
 use App\Http\Requests\UpdateVacanteRequest;
 use App\Models\Vacante;
@@ -14,22 +15,74 @@ class VacanteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexVacanteRequest $request)
     {
-        $vacantes = Vacante::with(['usuario.empresa', 'modalidad'])
-        ->orderBy('published_at', 'desc')
-        ->paginate(10);
+        $validated = $request->validated();
 
-        $usuarioId = $request->user()->idUsuario;
-        $vacantes->getCollection()->transform(function ($vacante) use ($usuarioId) {
-            $vacante->setAttribute('esMia', (int) $vacante->idUsuario === (int) $usuarioId);
-            return $vacante;
-        });
+        $query = Vacante::query()
+            ->select([
+                'idVacante',
+                'idUsuario',
+                'idModalidad',
+                'puesto',
+                'contenido',
+                'sueldo_min',
+                'sueldo_max',
+                'multimedia',
+                'published_at',
+                'created_at',
+                'updated_at',
+            ]);
+
+        if (!empty($validated['q'])) {
+            $like = '%' . addcslashes(trim($validated['q']), '%_\\') . '%';
+            $query->where(function ($sub) use ($like) {
+                $sub->where('puesto', 'ilike', $like)
+                    ->orWhere('contenido', 'ilike', $like);
+            });
+        }
+
+        if (!empty($validated['idModalidad'])) {
+            $query->where('idModalidad', (int) $validated['idModalidad']);
+        }
+
+        if (isset($validated['sueldo_min'])) {
+            $sueldoMin = (float) $validated['sueldo_min'];
+            $query->where(function ($sub) use ($sueldoMin) {
+                $sub->where('sueldo_max', '>=', $sueldoMin)
+                    ->orWhere(function ($inner) use ($sueldoMin) {
+                        $inner->whereNull('sueldo_max')
+                            ->where('sueldo_min', '>=', $sueldoMin);
+                    });
+            });
+        }
+
+        if (isset($validated['sueldo_max'])) {
+            $sueldoMax = (float) $validated['sueldo_max'];
+            $query->where(function ($sub) use ($sueldoMax) {
+                $sub->where('sueldo_min', '<=', $sueldoMax)
+                    ->orWhere(function ($inner) use ($sueldoMax) {
+                        $inner->whereNull('sueldo_min')
+                            ->where('sueldo_max', '<=', $sueldoMax);
+                    });
+            });
+        }
+
+        $vacantes = $query
+            ->orderByDesc('published_at')
+            ->orderByDesc('idVacante')
+            ->paginate(10);
 
         return response()->json([
             'success' => true,
             'message' => 'Vacantes obtenidas correctamente',
-            'vacantes' => $vacantes
+            'data'    => $vacantes->items(),
+            'meta'    => [
+                'current_page' => $vacantes->currentPage(),
+                'last_page'    => $vacantes->lastPage(),
+                'per_page'     => $vacantes->perPage(),
+                'total'        => $vacantes->total(),
+            ],
         ], 200);
     }
 
