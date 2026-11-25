@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BuscadorController;
 use App\Http\Controllers\Api\CarreraController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\EmpresaController;
+use App\Http\Controllers\Api\EstadoPostulacionController;
 use App\Http\Controllers\Api\FeedController;
 use App\Http\Controllers\Api\IndustriaController;
 use App\Http\Controllers\Api\InteresController;
@@ -36,6 +37,8 @@ Route::get('/niveles', [NivelController::class, 'index']);
 Route::get('/industrias', [IndustriaController::class, 'index']);
 // Ruta para listar el catalogo de modalidades disponibles
 Route::get('/modalidades', [ModalidadController::class, 'index']);
+// Ruta para listar el catalogo de estados postulacion disponibles
+Route::get('/estados-postulaciones', [EstadoPostulacionController::class, 'indexEstados']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Ruta para logout
