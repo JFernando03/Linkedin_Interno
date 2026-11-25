@@ -88,6 +88,14 @@ class DatabaseSeeder extends Seeder
             ['nombre' => 'Híbrido'],
         ]);
 
+        // 7. Insertar el catálogo de estados de Postulaciones
+        DB::table('estadosPostulaciones')->insert([
+            ['idEstadoPostulacion' => 1, 'nombre' => 'Pendiente'],
+            ['idEstadoPostulacion' => 2, 'nombre' => 'En revisión'],
+            ['idEstadoPostulacion' => 3, 'nombre' => 'Aceptado'],
+            ['idEstadoPostulacion' => 4, 'nombre' => 'Rechazado'],
+        ]);
+
         // --- Alumno 1 ---
         $user1 = User::firstOrCreate(
             ['email' => 'isma@gmail.com'],

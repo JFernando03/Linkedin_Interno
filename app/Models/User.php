@@ -65,4 +65,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Empresa::class, 'idUsuario', 'idUsuario');
     }
+
+    // Relación con postulaciones
+    public function postulaciones()
+    {
+        return $this->hasMany(Postulacion::class, 'idUsuario', 'idUsuario');
+    }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\InteresController;
 use App\Http\Controllers\Api\ModalidadController;
 use App\Http\Controllers\Api\NivelController;
 use App\Http\Controllers\Api\PerfilController;
+use App\Http\Controllers\Api\PostulacionController;
 use App\Http\Controllers\Api\PublicacionController;
 use App\Http\Controllers\Api\HabilidadController;
 use App\Http\Controllers\Api\VacanteController;
@@ -94,4 +95,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Ruta para ver a todos los alumnos (Sin empresas y administradores)
     Route::get('/alumnos', [AlumnoController::class, 'index']);
+
+    Route::post('/postulaciones', [PostulacionController::class, 'store']);
+    Route::get('/postulaciones/alumno', [PostulacionController::class, 'indexPostulacionesAlumno']);
+    Route::get('/vacantes/{idVacante}/postulaciones', [PostulacionController::class, 'indexPorVacante']);
+    Route::patch('/postulaciones/{idPostulacion}/estado', [PostulacionController::class, 'updateEstado']);
 });

@@ -34,4 +34,10 @@ class Vacante extends Model
     {
         return $this->belongsTo(Modalidad::class, 'idModalidad', 'idModalidad');
     }
+
+    // Relación con postulaciones
+    public function postulaciones()
+    {
+        return $this->hasMany(Postulacion::class, 'idVacante', 'idVacante');
+    }
 }
